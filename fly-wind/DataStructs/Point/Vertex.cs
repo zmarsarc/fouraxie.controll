@@ -3,22 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using fly_wind.DataStructs.Point;
 
 namespace fly_wind.DataStructs {
-    class Vertex {
-
-        public double x;
-        public double y;
-        public double  z;
+    class Vertex : Vector3{
 
         List<Vertex> contract;
 
-        public Vertex() {
-            x = 0.0f;
-            y = 0.0f;
-            z = 0.0f;
-
-            contract = new List<Vertex>();
+        public Vertex(double x = 0f, double y = 0f, double z = 0f) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
         }
     }
 }

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace fly_wind.DataStructs {
     class VertexsNet {
 
-        private HashSet<Vertex> nodes = new HashSet<Vertex>();
+        private List<Vertex> nodes = new List<Vertex>();
 
-        public HashSet<Vertex> getNet() {
+        public List<Vertex> getNet() {
             return nodes;
         }
     }

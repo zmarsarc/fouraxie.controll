@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace fly_wind.DataStruct {
-    class NodesMoah {
+namespace fly_wind.DataStructs {
+    class VertexsNet {
 
-        private HashSet<MashNode> nodes = new HashSet<MashNode>();
+        private HashSet<Vertex> nodes = new HashSet<Vertex>();
 
-        public HashSet<MashNode> getMash() {
+        public HashSet<Vertex> getNet() {
             return nodes;
         }
     }

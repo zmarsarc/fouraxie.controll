@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructs\Point\Vector.cs" />
     <Compile Include="DataStructs\Point\Vertex.cs" />
     <Compile Include="DataStructs\Point\Navigation.cs" />
     <Compile Include="DataStructs\VertexsNet.cs" />

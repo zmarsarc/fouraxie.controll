@@ -1,4 +1,4 @@
-﻿namespace fly_wind {
+﻿namespace FlyWind {
     partial class Form1 {
         /// <summary>
         /// Required designer variable.

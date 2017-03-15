@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace fly_wind.DataStructs.Point {
+namespace FlyWind.DataStructs.Point {
     interface IVector3 {
         double x { get; set; }
         double y { get; set; }

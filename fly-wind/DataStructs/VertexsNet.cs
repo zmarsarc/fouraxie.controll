@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace fly_wind.DataStructs {
+namespace FlyWind.DataStructs {
     class VertexsNet {
 
         private List<Vertex> nodes = new List<Vertex>();

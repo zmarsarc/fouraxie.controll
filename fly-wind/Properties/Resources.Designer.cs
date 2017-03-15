@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace fly_wind.Properties {
+namespace FlyWind.Properties {
 
 
     /// <summary>

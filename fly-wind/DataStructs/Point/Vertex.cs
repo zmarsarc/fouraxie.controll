@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using fly_wind.DataStructs.Point;
+using FlyWind.DataStructs.Point;
 
-namespace fly_wind.DataStructs {
+namespace FlyWind.DataStructs {
     class Vertex : Vector3{
 
         List<Vertex> contract;

@@ -151,6 +151,26 @@ namespace GroundController {
 
         }
 
+        private long findChunkPosition(BinaryReader br, long pos, UInt16 chunks) {
+
+            var curretPos = br.BaseStream.Position;
+            br.BaseStream.Seek(pos, SeekOrigin.Begin);
+            long targetPos = 0;
+
+            UInt16 chunkID = br.ReadUInt16();
+            UInt32 chunkSize = br.ReadUInt32();
+
+            while (chunkID != chunks) {
+                br.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
+                chunkID = br.ReadUInt16();
+                chunkSize = br.ReadUInt32();
+            }
+            targetPos = br.BaseStream.Position - 6;
+            br.BaseStream.Seek(curretPos, SeekOrigin.Begin);
+
+            return targetPos;
+        }
+
         public D3DObject Open(string filename) {
             FileStream file = new FileStream(filename, FileMode.Open);
             BinaryReader binaryFile = new BinaryReader(file);
@@ -162,28 +182,18 @@ namespace GroundController {
             }
             UInt32 fileSize = binaryFile.ReadUInt32();
 
-            // relocate to editor chunk
-            UInt16 chunkID = binaryFile.ReadUInt16();
-            UInt32 chunkSize = binaryFile.ReadUInt32();
+            // caution: for some reason it may throw EndOfStream or others IO exceptions
+            // it's batter to pay more attention on error check
+            long pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Editor);
+            // chunk's header always has a id block and a next pointer block
+            // it will occupy 2 bytes and 4 bytes, 6 bytes in total.
+            // so the first sub chunk's header start after 6 bytes of current file position.
+            pos += 6;
 
-            while (chunkID != Chunks.Editor) {
-                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
-                chunkID = binaryFile.ReadUInt16();
-                chunkSize = binaryFile.ReadUInt32();
-            }
-
-            // into editor's sub chunks
-            chunkID = binaryFile.ReadUInt16();
-            chunkSize = binaryFile.ReadUInt32();
-
-            // relocate to object chunk
-            while (chunkID != Chunks.Object) {
-                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
-                chunkID = binaryFile.ReadUInt16();
-                chunkSize = binaryFile.ReadUInt32();
-            }
-
+            pos = findChunkPosition(binaryFile, pos, Chunks.Object);
             // into object's sub chunks
+            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
+
             // first element is object's name, which is a c-style string
             List<byte> nameByte = new List<byte>();
             byte c = binaryFile.ReadByte();
@@ -193,25 +203,9 @@ namespace GroundController {
             }
             string name = Encoding.UTF8.GetString(nameByte.ToArray());
 
-            // relocate to mash
-            chunkID = binaryFile.ReadUInt16();
-            chunkSize = binaryFile.ReadUInt32();
-            while (chunkID != Chunks.Mesh) {
-                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
-                chunkID = binaryFile.ReadUInt16();
-                chunkSize = binaryFile.ReadUInt32();
-            }
-
-            // now process all mash information
-            // get all vertexs first
-
-            chunkID = binaryFile.ReadUInt16();
-            chunkSize = binaryFile.ReadUInt32();
-            while (chunkID != Chunks.VertexList) {
-                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
-                chunkID = binaryFile.ReadUInt16();
-                chunkSize = binaryFile.ReadUInt32();
-            }
+            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Mesh);
+            pos = findChunkPosition(binaryFile, pos + 6, Chunks.VertexList);
+            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
 
             // read in vertexs
             UInt16 vertexsCount = binaryFile.ReadUInt16();
@@ -224,14 +218,8 @@ namespace GroundController {
                 vertexs.Add(new Vertex(x, y, z));
             }
 
-            // relocate to face list
-            chunkID = binaryFile.ReadUInt16();
-            chunkSize = binaryFile.ReadUInt32();
-            while (chunkID != Chunks.Face) {
-                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
-                chunkID = binaryFile.ReadUInt16();
-                chunkSize = binaryFile.ReadUInt32();
-            }
+            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Face);
+            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
 
             // read in faces
             List<Face> faces = new List<Face>();

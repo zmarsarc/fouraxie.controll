@@ -1,19 +1,16 @@
 ﻿using System;
+using System.Runtime;
 
 namespace FlyWind.DataStructs.Point {
     interface IVector3 {
         double x { get; set; }
         double y { get; set; }
         double z { get; set; }
-        double distanceFrom(double x, double y, double z);
-        double distanceFrom(IVector3 vec3);
     }
 
     interface IVector2 {
         double x { get; set; }
         double y { get; set; }
-        double distanceFrom(double x, double y);
-        double distanceFrom(IVector2 vec2);
     }
 
     class Vector3 : IVector3 {
@@ -35,6 +32,11 @@ namespace FlyWind.DataStructs.Point {
             this.y = y;
             this.z = z;
         }
+        public Vector3(IVector3 v) {
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
+        }
 
         public double distanceFrom(double x, double y, double z) {
             return Math.Sqrt(Math.Pow(this.x - x, 2f) + Math.Pow(this.y - y, 2f) + Math.Pow(this.z - z, 2f));
@@ -51,7 +53,11 @@ namespace FlyWind.DataStructs.Point {
         public static Vector3 operator *(Vector3 vec3, double num) {
             return 3 * vec3;
         }
+        public static Vector3 operator /(Vector3 vec3, double num) {
+            return vec3 * (1 / num);
+        }
         #endregion reload operator *
+
         #region reload operator +
         public static Vector3 operator + (Vector3 a, Vector3 b) {
             return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
@@ -64,6 +70,38 @@ namespace FlyWind.DataStructs.Point {
         }
         #endregion reload operator +
 
+        #region reload operator ==
+        public static bool operator ==(Vector3 a, Vector3 b) {
+            return (a.x == b.x && a.y == b.y && a.z == b.z);
+        }
+        public static bool operator !=(Vector3 a, Vector3 b) {
+            return !(a == b);
+        }
+        #endregion reload operator ==
+
+        public override bool Equals(object obj) {
+            return this == (Vector3)obj;
+        }
+
+        public override int GetHashCode() {
+            return base.GetHashCode();
+        }
+
+        public double dot(Vector3 vec) {
+            return (this.x * vec.x + this.y * vec.y + this.z * vec.z);
+        }
+
+        public Vector3 cross(Vector3 vec) {
+            return new Vector3(y * vec.z - z * vec.y, z * vec.x - x * vec.z, x * vec.y - vec.x * y);
+        }
+
+        public double mode() {
+            return Math.Sqrt(Math.Pow(x, 2f) + Math.Pow(y, 2f) + Math.Pow(z, 2f));
+        }
+
+        public Vector3 direction() {
+            return (this / mode());
+        }
     }
 
     class Vector2 : IVector2 {
@@ -81,6 +119,10 @@ namespace FlyWind.DataStructs.Point {
             this.x = x;
             this.y = y;
         }
+        public Vector2(IVector2 v) {
+            this.x = v.x;
+            this.y = v.y;
+        }
 
         public double distanceFrom(double x, double y) {
             return Math.Sqrt(Math.Pow(this.x - x, 2f) + Math.Pow(this.y - y, 2f));
@@ -97,7 +139,11 @@ namespace FlyWind.DataStructs.Point {
         public static Vector2 operator *(Vector2 vec2, double num) {
             return num * vec2;
         }
+        public static Vector2 operator /(Vector2 vec2, double num) {
+            return vec2 * (1 / num);
+        }
         #endregion reload operator *
+
         #region reload operator +
         public static Vector2 operator +(Vector2 a, Vector2 b) {
             return new Vector2(a.x * b.x, a.y * b.y);
@@ -109,5 +155,48 @@ namespace FlyWind.DataStructs.Point {
             return a + (-b);
         }
         #endregion reload operator +
+
+        #region reload operator ==
+        public static bool operator ==(Vector2 a, Vector2 b) {
+            return (a.x == b.x && a.y == b.y);
+        }
+        public static bool operator !=(Vector2 a, Vector2 b) {
+            return !(a == b);
+        }
+        #endregion reload operator ==
+
+        public override bool Equals(object obj) {
+            return this == (Vector2)obj;
+        }
+
+        public override int GetHashCode() {
+            return base.GetHashCode();
+        }
+
+        /// <summary>
+        /// 求本向量和 vec 向量的叉积
+        /// </summary>
+        /// <param name="vec">指定向量</param>
+        /// <returns></returns>
+        public double croee(Vector2 vec) {
+            return (this.x * vec.y - this.y * vec.x);
+        }
+
+        /// <summary>
+        /// 求本向量和 vec 向量的点积
+        /// </summary>
+        /// <param name="vec">指定向量</param>
+        /// <returns></returns>
+        public double dot(Vector2 vec) {
+            return (this.x * vec.x + this.y * vec.y);
+        }
+
+        public double mode() {
+            return Math.Sqrt(Math.Pow(x, 2f) + Math.Pow(y, 2f));
+        }
+
+        public Vector2 direction() {
+            return (this / mode());
+        }
     }
 }

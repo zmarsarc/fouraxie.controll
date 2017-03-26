@@ -20,6 +20,8 @@ namespace FlyWind {
         private List<Navigation> generateWayPoints(VertexsNet vn, Vertex initPoint) {
             List<Navigation> wps = new List<Navigation>();
             
+
+
             return wps;
         }
 
@@ -35,10 +37,6 @@ namespace FlyWind {
                 ret = (ret.distanceFrom(Vector3.zero) < nav.distanceFrom(Vector3.zero) ? ret : nav);
             }
             return ret;
-        }
-
-        private Navigation nextSurfacePoint(Navigation start, Navigation direction, double range, double gradient) {
-            throw new NotImplementedException();
         }
     }
 }

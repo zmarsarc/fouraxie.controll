@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using FlyWind.DataStructs.Point;
 
 namespace FlyWind.DataStructs {
-    class VertexsNet {
+    class Graph {
 
-        private List<Vertex> nodes = new List<Vertex>();
+        private List<Vertex> vertex;
 
-        public List<Vertex> getNet() {
-            return nodes;
+        public Graph() { }
+
+        public List<Vertex> vertexs() {
+            return vertex;
         }
     }
 }

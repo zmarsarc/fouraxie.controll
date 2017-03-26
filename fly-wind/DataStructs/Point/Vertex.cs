@@ -5,15 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using FlyWind.DataStructs.Point;
 
-namespace FlyWind.DataStructs {
+namespace FlyWind.DataStructs.Point {
     class Vertex : Vector3{
 
-        List<Vertex> contract;
+        private List<Vertex> contract;
 
-        public Vertex(double x = 0f, double y = 0f, double z = 0f) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+        public Vertex(double x = 0f, double y = 0f, double z = 0f) : base(x, y, z) { }
+        public Vertex(IVector3 v) : base(v) { }
+
+        public List<Vertex> contracts() {
+            return contract;
         }
     }
 }

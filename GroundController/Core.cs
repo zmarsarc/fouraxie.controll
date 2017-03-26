@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -105,5 +106,35 @@ namespace GroundController {
             return wayPoints;
         }
 
+    }
+
+    public class InputAdapter {
+
+        public InputAdapter() { }
+
+        // from .3ds file format
+
+        public const UInt16 MainChunk = 0x4d4d;
+        public const UInt16 Version = 0x0002;
+        public const UInt16 Editor = 0x3d3d;
+        public const UInt16 ObjectChunk = 0x4000;
+        public const UInt16 Mash = 0x4100;
+        public const UInt16 VertexList = 0x4110;
+        public const UInt16 FacesDescription = 0x4120;
+
+        public void Open(string filename) {
+            FileStream file = new FileStream(filename, FileMode.Open);
+            BinaryReader binaryFile = new BinaryReader(file);
+
+            // read the first chunk, must be a main chunk
+            UInt16 root = binaryFile.ReadUInt16();
+            if (root != MainChunk) {
+                throw new FileFormatException("not a 3ds file");
+            }
+
+            // clear up
+            binaryFile.Close();
+            file.Close();
+        }
     }
 }

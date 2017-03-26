@@ -62,6 +62,17 @@ namespace GroundController {
         }
     }
 
+    public class D3DObject {
+
+        private List<Vertex> vertexs = new List<Vertex>();
+        private List<Face> faces = new List<Face>();
+
+        public D3DObject(List<Vertex> vex, List<Face> faces) {
+            this.vertexs = vex;
+            this.faces = faces;
+        }
+    }
+
     public class Core {
 
         /// <summary>
@@ -128,21 +139,25 @@ namespace GroundController {
 
         // from .3ds file format
 
-        public const UInt16 MainChunk = 0x4d4d;
-        public const UInt16 Version = 0x0002;
-        public const UInt16 Editor = 0x3d3d;
-        public const UInt16 ObjectChunk = 0x4000;
-        public const UInt16 Mash = 0x4100;
-        public const UInt16 VertexList = 0x4110;
-        public const UInt16 FacesDescription = 0x4120;
+        // 3ds chunk IDs
+        public class Chunks {
+            static public readonly UInt16 Main = 0x4d4d;
+            static public readonly UInt16 Version = 0x0002;
+            static public readonly UInt16 Object = 0x4000;
+            static public readonly UInt16 Editor = 0x3d3d;
+            static public readonly UInt16 Mesh = 0x4100;
+            static public readonly UInt16 VertexList = 0x4110;
+            static public readonly UInt16 Face = 0x4120;
 
-        public void Open(string filename) {
+        }
+
+        public D3DObject Open(string filename) {
             FileStream file = new FileStream(filename, FileMode.Open);
             BinaryReader binaryFile = new BinaryReader(file);
 
             // read the first chunk, must be a main chunk
             UInt16 root = binaryFile.ReadUInt16();
-            if (root != MainChunk) {
+            if (root != Chunks.Main) {
                 throw new FileFormatException("not a 3ds file");
             }
             UInt32 fileSize = binaryFile.ReadUInt32();
@@ -151,7 +166,7 @@ namespace GroundController {
             UInt16 chunkID = binaryFile.ReadUInt16();
             UInt32 chunkSize = binaryFile.ReadUInt32();
 
-            while (chunkID != Editor) {
+            while (chunkID != Chunks.Editor) {
                 binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
                 chunkID = binaryFile.ReadUInt16();
                 chunkSize = binaryFile.ReadUInt32();
@@ -162,7 +177,7 @@ namespace GroundController {
             chunkSize = binaryFile.ReadUInt32();
 
             // relocate to object chunk
-            while (chunkID != ObjectChunk) {
+            while (chunkID != Chunks.Object) {
                 binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
                 chunkID = binaryFile.ReadUInt16();
                 chunkSize = binaryFile.ReadUInt32();
@@ -181,7 +196,7 @@ namespace GroundController {
             // relocate to mash
             chunkID = binaryFile.ReadUInt16();
             chunkSize = binaryFile.ReadUInt32();
-            while (chunkID != Mash) {
+            while (chunkID != Chunks.Mesh) {
                 binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
                 chunkID = binaryFile.ReadUInt16();
                 chunkSize = binaryFile.ReadUInt32();
@@ -192,7 +207,7 @@ namespace GroundController {
 
             chunkID = binaryFile.ReadUInt16();
             chunkSize = binaryFile.ReadUInt32();
-            while (chunkID != VertexList) {
+            while (chunkID != Chunks.VertexList) {
                 binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
                 chunkID = binaryFile.ReadUInt16();
                 chunkSize = binaryFile.ReadUInt32();
@@ -212,7 +227,7 @@ namespace GroundController {
             // relocate to face list
             chunkID = binaryFile.ReadUInt16();
             chunkSize = binaryFile.ReadUInt32();
-            while (chunkID != FacesDescription) {
+            while (chunkID != Chunks.Face) {
                 binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
                 chunkID = binaryFile.ReadUInt16();
                 chunkSize = binaryFile.ReadUInt32();
@@ -233,9 +248,13 @@ namespace GroundController {
                 f.visibility.Add((info & (UInt16)0x0004) != 0 ? true : false); // set visibility of ba, second -> first
             }
 
+            D3DObject obj = new D3DObject(vertexs, faces);
+
             // clear up
             binaryFile.Close();
             file.Close();
+
+            return obj;
         }
     }
 }

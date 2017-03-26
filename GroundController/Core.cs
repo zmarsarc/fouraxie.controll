@@ -48,6 +48,20 @@ namespace GroundController {
         }
     }
 
+    public class Face {
+        public uint first;
+        public uint second;
+        public uint third;
+
+        public List<bool> visibility = new List<bool>();
+
+        public Face(uint first, uint second, uint third) {
+            this.first = first;
+            this.second = second;
+            this.third = third;
+        }
+    }
+
     public class Core {
 
         /// <summary>
@@ -130,6 +144,93 @@ namespace GroundController {
             UInt16 root = binaryFile.ReadUInt16();
             if (root != MainChunk) {
                 throw new FileFormatException("not a 3ds file");
+            }
+            UInt32 fileSize = binaryFile.ReadUInt32();
+
+            // relocate to editor chunk
+            UInt16 chunkID = binaryFile.ReadUInt16();
+            UInt32 chunkSize = binaryFile.ReadUInt32();
+
+            while (chunkID != Editor) {
+                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
+                chunkID = binaryFile.ReadUInt16();
+                chunkSize = binaryFile.ReadUInt32();
+            }
+
+            // into editor's sub chunks
+            chunkID = binaryFile.ReadUInt16();
+            chunkSize = binaryFile.ReadUInt32();
+
+            // relocate to object chunk
+            while (chunkID != ObjectChunk) {
+                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
+                chunkID = binaryFile.ReadUInt16();
+                chunkSize = binaryFile.ReadUInt32();
+            }
+
+            // into object's sub chunks
+            // first element is object's name, which is a c-style string
+            List<byte> nameByte = new List<byte>();
+            byte c = binaryFile.ReadByte();
+            while (c != 0) {
+                nameByte.Add(c);
+                c = binaryFile.ReadByte();
+            }
+            string name = Encoding.UTF8.GetString(nameByte.ToArray());
+
+            // relocate to mash
+            chunkID = binaryFile.ReadUInt16();
+            chunkSize = binaryFile.ReadUInt32();
+            while (chunkID != Mash) {
+                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
+                chunkID = binaryFile.ReadUInt16();
+                chunkSize = binaryFile.ReadUInt32();
+            }
+
+            // now process all mash information
+            // get all vertexs first
+
+            chunkID = binaryFile.ReadUInt16();
+            chunkSize = binaryFile.ReadUInt32();
+            while (chunkID != VertexList) {
+                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
+                chunkID = binaryFile.ReadUInt16();
+                chunkSize = binaryFile.ReadUInt32();
+            }
+
+            // read in vertexs
+            UInt16 vertexsCount = binaryFile.ReadUInt16();
+
+            List<Vertex> vertexs = new List<Vertex>();
+            for (UInt16 i = 0; i < vertexsCount; ++i) {
+                float x = (float)binaryFile.ReadInt32();
+                float y = (float)binaryFile.ReadInt32();
+                float z = (float)binaryFile.ReadInt32();
+                vertexs.Add(new Vertex(x, y, z));
+            }
+
+            // relocate to face list
+            chunkID = binaryFile.ReadUInt16();
+            chunkSize = binaryFile.ReadUInt32();
+            while (chunkID != FacesDescription) {
+                binaryFile.BaseStream.Seek(chunkSize - 6, SeekOrigin.Current);
+                chunkID = binaryFile.ReadUInt16();
+                chunkSize = binaryFile.ReadUInt32();
+            }
+
+            // read in faces
+            List<Face> faces = new List<Face>();
+            UInt16 polygonsCount = binaryFile.ReadUInt16();
+            for (UInt16 i = 0; i < polygonsCount; ++i) {
+                UInt16 first = binaryFile.ReadUInt16();
+                UInt16 second = binaryFile.ReadUInt16();
+                UInt16 third = binaryFile.ReadUInt16();
+                UInt16 info = binaryFile.ReadUInt16();
+
+                Face f = new Face(first, second, third);
+                f.visibility.Add((info & (UInt16)0x0001) != 0 ? true : false); // set visibility of ac, first -> third
+                f.visibility.Add((info & (UInt16)0x0002) != 0 ? true : false); // set visibility of cb, third -> second
+                f.visibility.Add((info & (UInt16)0x0004) != 0 ? true : false); // set visibility of ba, second -> first
             }
 
             // clear up

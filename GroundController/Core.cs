@@ -171,7 +171,7 @@ namespace GroundController {
             return targetPos;
         }
 
-        public D3DObject Open(string filename) {
+        public List<D3DObject> Read(string filename) {
             FileStream file = new FileStream(filename, FileMode.Open);
             BinaryReader binaryFile = new BinaryReader(file);
 
@@ -186,63 +186,79 @@ namespace GroundController {
             // it's batter to pay more attention on error check
             long pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Editor);
             // chunk's header always has a id block and a next pointer block
-            // it will occupy 2 bytes and 4 bytes, 6 bytes in total.
+            // it occupy 2 and 4 bytes, 6 bytes in total.
             // so the first sub chunk's header start after 6 bytes of current file position.
+            binaryFile.ReadUInt16();
+            UInt32 editorSize = binaryFile.ReadUInt32();
+            long editorEndPos = pos + editorSize;
             pos += 6;
 
-            pos = findChunkPosition(binaryFile, pos, Chunks.Object);
-            // into object's sub chunks
-            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
+            List<D3DObject> objs = new List<D3DObject>();
+            long objectEntryPos = pos;
+            while (objectEntryPos < editorEndPos) {
+                pos = objectEntryPos;
+	            pos = findChunkPosition(binaryFile, pos, Chunks.Object);
 
-            // first element is object's name, which is a c-style string
-            List<byte> nameByte = new List<byte>();
-            byte c = binaryFile.ReadByte();
-            while (c != 0) {
-                nameByte.Add(c);
-                c = binaryFile.ReadByte();
+                objectEntryPos = pos;
+	            // into object's sub chunks
+	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
+	
+	            // first element is object's name, which is a c-style string
+	            List<byte> nameByte = new List<byte>();
+	            byte c = binaryFile.ReadByte();
+	            while (c != 0) {
+	                nameByte.Add(c);
+	                c = binaryFile.ReadByte();
+	            }
+                string name = Encoding.UTF8.GetString(nameByte.ToArray());
+
+	            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Mesh);
+
+
+	            pos = findChunkPosition(binaryFile, pos + 6, Chunks.VertexList);
+	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
+	
+	            // read in vertexs
+	            UInt16 vertexsCount = binaryFile.ReadUInt16();
+	
+	            List<Vertex> vertexs = new List<Vertex>();
+	            for (UInt16 i = 0; i < vertexsCount; ++i) {
+	                float x = (float)binaryFile.ReadInt32();
+	                float y = (float)binaryFile.ReadInt32();
+	                float z = (float)binaryFile.ReadInt32();
+	                vertexs.Add(new Vertex(x, y, z));
+	            }
+	
+	            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Face);
+	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
+	
+	            // read in faces
+	            List<Face> faces = new List<Face>();
+	            UInt16 polygonsCount = binaryFile.ReadUInt16();
+	            for (UInt16 i = 0; i < polygonsCount; ++i) {
+	                UInt16 first = binaryFile.ReadUInt16();
+	                UInt16 second = binaryFile.ReadUInt16();
+	                UInt16 third = binaryFile.ReadUInt16();
+	                UInt16 info = binaryFile.ReadUInt16();
+	
+	                Face f = new Face(first, second, third);
+	                f.visibility.Add((info & (UInt16)0x0001) != 0 ? true : false); // set visibility of ac, first -> third
+	                f.visibility.Add((info & (UInt16)0x0002) != 0 ? true : false); // set visibility of cb, third -> second
+	                f.visibility.Add((info & (UInt16)0x0004) != 0 ? true : false); // set visibility of ba, second -> first
+	            }
+	
+	            D3DObject obj = new D3DObject(vertexs, faces);
+                objs.Add(obj);
             }
-            string name = Encoding.UTF8.GetString(nameByte.ToArray());
-
-            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Mesh);
-            pos = findChunkPosition(binaryFile, pos + 6, Chunks.VertexList);
-            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
-
-            // read in vertexs
-            UInt16 vertexsCount = binaryFile.ReadUInt16();
-
-            List<Vertex> vertexs = new List<Vertex>();
-            for (UInt16 i = 0; i < vertexsCount; ++i) {
-                float x = (float)binaryFile.ReadInt32();
-                float y = (float)binaryFile.ReadInt32();
-                float z = (float)binaryFile.ReadInt32();
-                vertexs.Add(new Vertex(x, y, z));
-            }
-
-            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Face);
-            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
-
-            // read in faces
-            List<Face> faces = new List<Face>();
-            UInt16 polygonsCount = binaryFile.ReadUInt16();
-            for (UInt16 i = 0; i < polygonsCount; ++i) {
-                UInt16 first = binaryFile.ReadUInt16();
-                UInt16 second = binaryFile.ReadUInt16();
-                UInt16 third = binaryFile.ReadUInt16();
-                UInt16 info = binaryFile.ReadUInt16();
-
-                Face f = new Face(first, second, third);
-                f.visibility.Add((info & (UInt16)0x0001) != 0 ? true : false); // set visibility of ac, first -> third
-                f.visibility.Add((info & (UInt16)0x0002) != 0 ? true : false); // set visibility of cb, third -> second
-                f.visibility.Add((info & (UInt16)0x0004) != 0 ? true : false); // set visibility of ba, second -> first
-            }
-
-            D3DObject obj = new D3DObject(vertexs, faces);
 
             // clear up
             binaryFile.Close();
             file.Close();
 
-            return obj;
+            Console.WriteLine(objs.Count);
+
+            return objs;
         }
+
     }
 }

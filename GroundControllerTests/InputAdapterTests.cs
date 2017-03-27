@@ -14,7 +14,7 @@ namespace GroundController.Tests {
 
             InputAdapter input = new InputAdapter();
 
-            input.Open("build.3ds");
+            input.Read("build.3ds");
         }
     }
 }

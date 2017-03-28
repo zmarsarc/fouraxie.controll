@@ -64,8 +64,8 @@ namespace GroundController {
 
     public class D3DObject {
 
-        private List<Vertex> vertexs = new List<Vertex>();
-        private List<Face> faces = new List<Face>();
+        public List<Vertex> vertexs = new List<Vertex>();
+        public List<Face> faces = new List<Face>();
 
         public D3DObject(List<Vertex> vex, List<Face> faces) {
             this.vertexs = vex;

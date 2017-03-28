@@ -202,6 +202,17 @@ namespace GroundController {
             return faces;
         }
 
+        private string ReadObjectName(BinaryReader binaryFile) {
+            List<byte> nameByte = new List<byte>();
+            byte c = binaryFile.ReadByte();
+            while (c != 0) {
+                nameByte.Add(c);
+                c = binaryFile.ReadByte();
+            }
+            string name = Encoding.UTF8.GetString(nameByte.ToArray());
+            return name;
+        }
+
         public List<D3DObject> Read(string filename) {
             FileStream file = new FileStream(filename, FileMode.Open);
             BinaryReader binaryFile = new BinaryReader(file);
@@ -233,20 +244,11 @@ namespace GroundController {
                 objectEntryPos = pos;
 	            // into object's sub chunks
 	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
-	
-	            // first element is object's name, which is a c-style string
-	            List<byte> nameByte = new List<byte>();
-	            byte c = binaryFile.ReadByte();
-	            while (c != 0) {
-	                nameByte.Add(c);
-	                c = binaryFile.ReadByte();
-	            }
-                string name = Encoding.UTF8.GetString(nameByte.ToArray());
 
+                // first element is object's name, which is a c-style string
+                string name = ReadObjectName(binaryFile);
 
-	            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Mesh);
-
-
+                pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Mesh);
 	            pos = findChunkPosition(binaryFile, pos + 6, Chunks.VertexList);
 	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
                 List<Vertex> vertexs = ReadVertexs(binaryFile);

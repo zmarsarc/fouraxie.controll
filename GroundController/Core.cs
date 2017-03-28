@@ -230,36 +230,42 @@ namespace GroundController {
             // chunk's header always has a id block and a next pointer block
             // it occupy 2 and 4 bytes, 6 bytes in total.
             // so the first sub chunk's header start after 6 bytes of current file position.
-            binaryFile.ReadUInt16();
+            binaryFile.BaseStream.Seek(pos + 2, SeekOrigin.Begin);
             UInt32 editorSize = binaryFile.ReadUInt32();
             long editorEndPos = pos + editorSize;
-            pos += 6;
 
             List<D3DObject> objs = new List<D3DObject>();
-            long objectEntryPos = pos;
+            long objectEntryPos = findChunkPosition(binaryFile, pos + 6, Chunks.Object);
+
             while (objectEntryPos < editorEndPos) {
-                pos = objectEntryPos;
-	            pos = findChunkPosition(binaryFile, pos, Chunks.Object);
-
-                objectEntryPos = pos;
-	            // into object's sub chunks
-	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
-
-                // first element is object's name, which is a c-style string
+                binaryFile.BaseStream.Seek(objectEntryPos, SeekOrigin.Begin);
+                // read object's info
+                UInt16 objectID = binaryFile.ReadUInt16();
+                UInt32 objectSize = binaryFile.ReadUInt32();
+                long objectEndPos = objectEntryPos + objectSize;
+                // in data scope, there is object's name, which is a c-style string
                 string name = ReadObjectName(binaryFile);
 
-                pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Mesh);
-	            pos = findChunkPosition(binaryFile, pos + 6, Chunks.VertexList);
-	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
+                // locate to the start pos of mesh
+                long meshPos = findChunkPosition(binaryFile, objectEntryPos + 7 + name.Length, Chunks.Mesh);
+                binaryFile.BaseStream.Seek(meshPos, SeekOrigin.Begin);
+
+                long vertexListPos = findChunkPosition(binaryFile, meshPos + 6, Chunks.VertexList);
+                binaryFile.BaseStream.Seek(vertexListPos + 6, SeekOrigin.Begin);
                 List<Vertex> vertexs = ReadVertexs(binaryFile);
 
-                pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Face);
-	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
+                long faceList = findChunkPosition(binaryFile, meshPos + 6, Chunks.Face);
+                binaryFile.BaseStream.Seek(faceList + 6, SeekOrigin.Begin);
                 List<Face> faces = ReadFaces(binaryFile);
-
 
                 D3DObject obj = new D3DObject(vertexs, faces);
                 objs.Add(obj);
+
+                if (objectEndPos < editorEndPos) {
+                    objectEntryPos = findChunkPosition(binaryFile, objectEndPos, Chunks.Object);
+                } else {
+                    break;
+                }
             }
 
             // clear up

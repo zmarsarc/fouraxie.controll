@@ -171,6 +171,19 @@ namespace GroundController {
             return targetPos;
         }
 
+        private List<Vertex> ReadVertexs(BinaryReader binaryFile) {
+            UInt16 vertexsCount = binaryFile.ReadUInt16();
+
+            List<Vertex> vertexs = new List<Vertex>();
+            for (UInt16 i = 0; i < vertexsCount; ++i) {
+                float x = (float)binaryFile.ReadInt32();
+                float y = (float)binaryFile.ReadInt32();
+                float z = (float)binaryFile.ReadInt32();
+                vertexs.Add(new Vertex(x, y, z));
+            }
+            return vertexs;
+        }
+
         public List<D3DObject> Read(string filename) {
             FileStream file = new FileStream(filename, FileMode.Open);
             BinaryReader binaryFile = new BinaryReader(file);
@@ -212,24 +225,17 @@ namespace GroundController {
 	            }
                 string name = Encoding.UTF8.GetString(nameByte.ToArray());
 
+
 	            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Mesh);
 
 
 	            pos = findChunkPosition(binaryFile, pos + 6, Chunks.VertexList);
 	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
-	
-	            // read in vertexs
-	            UInt16 vertexsCount = binaryFile.ReadUInt16();
-	
-	            List<Vertex> vertexs = new List<Vertex>();
-	            for (UInt16 i = 0; i < vertexsCount; ++i) {
-	                float x = (float)binaryFile.ReadInt32();
-	                float y = (float)binaryFile.ReadInt32();
-	                float z = (float)binaryFile.ReadInt32();
-	                vertexs.Add(new Vertex(x, y, z));
-	            }
-	
-	            pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Face);
+
+                // read in vertexs
+                List<Vertex> vertexs = ReadVertexs(binaryFile);
+
+                pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Face);
 	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
 	
 	            // read in faces
@@ -243,7 +249,7 @@ namespace GroundController {
 	
 	                Face f = new Face(first, second, third);
 	                f.visibility.Add((info & (UInt16)0x0001) != 0 ? true : false); // set visibility of ac, first -> third
-	                f.visibility.Add((info & (UInt16)0x0002) != 0 ? true : false); // set visibility of cb, third -> second
+	                 f.visibility.Add((info & (UInt16)0x0002) != 0 ? true : false); // set visibility of cb, third -> second
 	                f.visibility.Add((info & (UInt16)0x0004) != 0 ? true : false); // set visibility of ba, second -> first
 	            }
 	
@@ -254,9 +260,6 @@ namespace GroundController {
             // clear up
             binaryFile.Close();
             file.Close();
-
-            Console.WriteLine(objs.Count);
-
             return objs;
         }
 

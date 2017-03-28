@@ -184,6 +184,24 @@ namespace GroundController {
             return vertexs;
         }
 
+        private List<Face> ReadFaces(BinaryReader binaryFile) {
+            List<Face> faces = new List<Face>();
+            UInt16 polygonsCount = binaryFile.ReadUInt16();
+            for (UInt16 i = 0; i < polygonsCount; ++i) {
+                UInt16 first = binaryFile.ReadUInt16();
+                UInt16 second = binaryFile.ReadUInt16();
+                UInt16 third = binaryFile.ReadUInt16();
+                UInt16 info = binaryFile.ReadUInt16();
+
+                Face f = new Face(first, second, third);
+                f.visibility.Add((info & (UInt16)0x0001) != 0 ? true : false); // set visibility of ac, first -> third
+                f.visibility.Add((info & (UInt16)0x0002) != 0 ? true : false); // set visibility of cb, third -> second
+                f.visibility.Add((info & (UInt16)0x0004) != 0 ? true : false); // set visibility of ba, second -> first
+                faces.Add(f);
+            }
+            return faces;
+        }
+
         public List<D3DObject> Read(string filename) {
             FileStream file = new FileStream(filename, FileMode.Open);
             BinaryReader binaryFile = new BinaryReader(file);
@@ -231,29 +249,14 @@ namespace GroundController {
 
 	            pos = findChunkPosition(binaryFile, pos + 6, Chunks.VertexList);
 	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
-
-                // read in vertexs
                 List<Vertex> vertexs = ReadVertexs(binaryFile);
 
                 pos = findChunkPosition(binaryFile, binaryFile.BaseStream.Position, Chunks.Face);
 	            binaryFile.BaseStream.Seek(pos + 6, SeekOrigin.Begin);
-	
-	            // read in faces
-	            List<Face> faces = new List<Face>();
-	            UInt16 polygonsCount = binaryFile.ReadUInt16();
-	            for (UInt16 i = 0; i < polygonsCount; ++i) {
-	                UInt16 first = binaryFile.ReadUInt16();
-	                UInt16 second = binaryFile.ReadUInt16();
-	                UInt16 third = binaryFile.ReadUInt16();
-	                UInt16 info = binaryFile.ReadUInt16();
-	
-	                Face f = new Face(first, second, third);
-	                f.visibility.Add((info & (UInt16)0x0001) != 0 ? true : false); // set visibility of ac, first -> third
-	                 f.visibility.Add((info & (UInt16)0x0002) != 0 ? true : false); // set visibility of cb, third -> second
-	                f.visibility.Add((info & (UInt16)0x0004) != 0 ? true : false); // set visibility of ba, second -> first
-	            }
-	
-	            D3DObject obj = new D3DObject(vertexs, faces);
+                List<Face> faces = ReadFaces(binaryFile);
+
+
+                D3DObject obj = new D3DObject(vertexs, faces);
                 objs.Add(obj);
             }
 

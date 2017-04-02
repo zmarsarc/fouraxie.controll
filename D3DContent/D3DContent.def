@@ -1,0 +1,12 @@
+LIBRARY
+
+EXPORTS
+
+SetSize  
+SetAlpha  
+SetNumDesiredSamples  
+SetAdapter  
+
+GetBackBufferNoRef  
+Render  
+Destroy  

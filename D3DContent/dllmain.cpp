@@ -84,6 +84,15 @@ Cleanup:
 	return hr;
 }
 
+extern "C" HRESULT WINAPI AddPoint(float x, float y, float z, DWORD color)
+{
+	assert(pManager);
+
+	CRenderer* currentRenderer;
+	pManager->GetCurrentRenderer(&currentRenderer);
+	return currentRenderer->AddPoint(x, y, z, color);
+}
+
 extern "C" HRESULT WINAPI Render()
 {
 	assert(pManager);

@@ -5,7 +5,9 @@ EXPORTS
 SetSize  
 SetAlpha  
 SetNumDesiredSamples  
-SetAdapter  
+SetAdapter 
+
+AddPoint
 
 GetBackBufferNoRef  
 Render  

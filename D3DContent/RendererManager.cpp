@@ -102,7 +102,7 @@ CRendererManager::EnsureRenderers()
 
 		for (UINT i = 0; i < m_cAdapters; ++i)
 		{
-			IFC(CTriangleRenderer::Create(m_pD3D, m_pD3DEx, m_hwnd, i, &m_rgRenderers[i]));
+			IFC(CLineStripRender::Create(m_pD3D, m_pD3DEx, m_hwnd, i, &m_rgRenderers[i]));
 		}
 
 		// Default to the default adapter 
@@ -498,9 +498,12 @@ CRendererManager::SetAdapter(POINT screenSpacePoint)
 HRESULT CRendererManager::GetCurrentRenderer(CRenderer** pRenderer) {
 	HRESULT hr = S_OK;
 
-	if (!m_pCurrentRenderer) hr = E_FAIL;
-
-	*pRenderer = m_pCurrentRenderer;
+	if (!m_pCurrentRenderer) {
+		hr = E_FAIL;
+	}
+	else {
+		*pRenderer = m_pCurrentRenderer;
+	}
 
 	return hr;
 }

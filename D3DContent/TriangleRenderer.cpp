@@ -50,6 +50,11 @@ Cleanup:
 	return hr;
 }
 
+HRESULT CTriangleRenderer::AddPoint(float x, float y, float z, DWORD color) {
+	HRESULT hr = S_OK;
+	return hr;
+}
+
 //+-----------------------------------------------------------------------------
 //
 //  Member:

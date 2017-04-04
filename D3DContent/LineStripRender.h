@@ -7,6 +7,7 @@ public:
 	~CLineStripRender();
 
 	HRESULT Render();
+	HRESULT AddPoint(float x, float y, float z, DWORD color);
 
 protected:
 	HRESULT Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter);

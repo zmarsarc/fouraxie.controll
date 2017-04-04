@@ -70,6 +70,11 @@ Cleanup:
 	return hr;
 }
 
+HRESULT CLineStripRender::AddPoint(float x, float y, float z, DWORD color) {
+	HRESULT hr = S_OK;
+	return hr;
+}
+
 HRESULT CLineStripRender::Render()
 {
 	HRESULT hr = S_OK;

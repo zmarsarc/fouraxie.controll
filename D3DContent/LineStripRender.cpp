@@ -40,21 +40,6 @@ HRESULT CLineStripRender::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd
 	// Call base to create the device and render target
 	IFC(CRenderer::Init(pD3D, pD3DEx, hwnd, uAdapter));
 
-	// Set up the VB
-	CUSTOMVERTEX vertices[] =
-	{
-		{ -1.0f, -1.0f, 0.0f, 0xffff0000, }, // x, y, z, color
-		{ 1.0f, -1.0f, 0.0f, 0xff00ff00, },
-		{ 0.0f,  1.0f, 0.0f, 0xff00ffff, },
-	};
-
-	IFC(m_pd3dDevice->CreateVertexBuffer(sizeof(vertices), 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &m_pd3dVB, NULL));
-
-	void *pVertices;
-	IFC(m_pd3dVB->Lock(0, sizeof(vertices), &pVertices, 0));
-	memcpy(pVertices, vertices, sizeof(vertices));
-	m_pd3dVB->Unlock();
-
 	// Set up the camera
 	D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
 	IFC(m_pd3dDevice->SetTransform(D3DTS_VIEW, &matView));
@@ -64,8 +49,28 @@ HRESULT CLineStripRender::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd
 	// Set up the global state
 	IFC(m_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 	IFC(m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE));
-	IFC(m_pd3dDevice->SetStreamSource(0, m_pd3dVB, 0, sizeof(CUSTOMVERTEX)));
 	IFC(m_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX));
+
+Cleanup:
+	return hr;
+}
+
+HRESULT CLineStripRender::SetupBuffer()
+{
+	HRESULT hr = S_OK;
+
+	UINT bufferSize = sizeof(CUSTOMVERTEX) * vertex.size();
+
+	IFC(m_pd3dDevice->CreateVertexBuffer(bufferSize, 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &m_pd3dVB, NULL));
+
+	void *pVertices;
+	IFC(m_pd3dVB->Lock(0, bufferSize, &pVertices, 0));
+	memcpy(pVertices, vertex.data(), bufferSize);
+	m_pd3dVB->Unlock();
+
+	IFC(m_pd3dDevice->SetStreamSource(0, m_pd3dVB, 0, sizeof(CUSTOMVERTEX)));
+
+	vertex.clear();  // auto clear buffer
 
 Cleanup:
 	return hr;
@@ -73,6 +78,7 @@ Cleanup:
 
 HRESULT CLineStripRender::AddPoint(float x, float y, float z, DWORD color) {
 	HRESULT hr = S_OK;
+	vertex.push_back(CUSTOMVERTEX(x, y, z, color));
 	return hr;
 }
 
@@ -81,23 +87,23 @@ HRESULT CLineStripRender::Render()
 	HRESULT hr = S_OK;
 	D3DXMATRIXA16 matWorld;
 
+	auto countPoint = vertex.size();
+	IFC(SetupBuffer());
+
 	IFC(m_pd3dDevice->BeginScene());
 	IFC(m_pd3dDevice->Clear(
 		0,
 		NULL,
 		D3DCLEAR_TARGET,
-		D3DCOLOR_ARGB(128, 0, 0, 128),  // NOTE: Premultiplied alpha!
+		D3DCOLOR_ARGB(0, 0, 0, 0),
 		1.0f,
 		0
 	));
 
-	// Set up the rotation
-	UINT  iTime = GetTickCount() % 1000;
-	FLOAT fAngle = iTime * (2.0f * D3DX_PI) / 1000.0f;
-	D3DXMatrixRotationY(&matWorld, fAngle);
+	D3DXMatrixTranslation(&matWorld, 0.0f, 0.0f, 0.0f);
 	IFC(m_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld));
 
-	IFC(m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1));
+	IFC(m_pd3dDevice->DrawPrimitive(D3DPT_LINESTRIP, 0, countPoint - 1));
 
 	IFC(m_pd3dDevice->EndScene());
 

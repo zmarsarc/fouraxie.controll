@@ -150,6 +150,11 @@ namespace GroundController {
                 IntPtr pSurface = IntPtr.Zero;
                 HRESULT.Check(GetBackBufferNoRef(out pSurface));
                 if (pSurface != IntPtr.Zero) {
+                    AddPoint(0f, 0f, 0f, 0xFFFFFFFF);
+                    AddPoint(2f, 0f, 0f, 0xFFFFFFFF);
+                    AddPoint(2f, 2f, 0f, 0xFFFFFFFF);
+                    AddPoint(0f, 2f, 0f, 0xFFFFFFFF);
+                    AddPoint(0f, 0f, 0f, 0xFFFFFFFF);
                     d3dimg.Lock();
                     // Repeatedly calling SetBackBuffer with the same IntPtr is 
                     // a no-op. There is no performance penalty.
@@ -194,6 +199,9 @@ namespace GroundController {
 
         [DllImport("D3DContent.dll")]
         static extern int SetAdapter(POINT screenSpacePoint);
+
+        [DllImport("D3DContent.dll")]
+        static extern int AddPoint(float x, float y, float z, uint color);
 
         [DllImport("D3DContent.dll")]
         static extern int Render();

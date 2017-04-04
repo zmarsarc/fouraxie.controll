@@ -27,6 +27,12 @@
 
 struct CUSTOMVERTEX
 {
+	CUSTOMVERTEX(float x, float y, float z, DWORD color) {
+		this->x = x;
+		this->y = y;
+		this->z = z;
+		this->color = color;
+	}
 	FLOAT x, y, z;
 	DWORD color;
 };

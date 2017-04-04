@@ -13,7 +13,7 @@
 
 #include "StdAfx.h"
 
-const static TCHAR szAppName[] = TEXT("D3DImageSample");
+const static TCHAR szAppName[] = TEXT("HostedRenderer");
 typedef HRESULT(WINAPI *DIRECT3DCREATE9EXFUNCTION)(UINT SDKVersion, IDirect3D9Ex**);
 
 //+-----------------------------------------------------------------------------
@@ -493,6 +493,16 @@ CRendererManager::SetAdapter(POINT screenSpacePoint)
 			}
 		}
 	}
+}
+
+HRESULT CRendererManager::GetCurrentRenderer(CRenderer** pRenderer) {
+	HRESULT hr = S_OK;
+
+	if (!m_pCurrentRenderer) hr = E_FAIL;
+
+	*pRenderer = m_pCurrentRenderer;
+
+	return hr;
 }
 
 //+-----------------------------------------------------------------------------

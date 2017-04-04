@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "LineStripRender.h"
+#include <vector>
 
 CLineStripRender::CLineStripRender() : CRenderer(), m_pd3dVB(NULL)
 {

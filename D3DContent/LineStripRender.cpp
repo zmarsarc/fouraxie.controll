@@ -59,6 +59,12 @@ HRESULT CLineStripRender::SetupBuffer()
 {
 	HRESULT hr = S_OK;
 
+	// buffer must have elements
+	if (vertex.empty()) {
+		hr = E_UNEXPECTED;
+		goto Cleanup;
+	}
+
 	UINT bufferSize = sizeof(CUSTOMVERTEX) * vertex.size();
 
 	IFC(m_pd3dDevice->CreateVertexBuffer(bufferSize, 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &m_pd3dVB, NULL));

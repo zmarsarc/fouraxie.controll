@@ -151,9 +151,9 @@ namespace GroundController {
                 HRESULT.Check(GetBackBufferNoRef(out pSurface));
                 if (pSurface != IntPtr.Zero) {
                     AddPoint(0f, 0f, 0f, 0xFFFFFFFF);
-                    AddPoint(2f, 0f, 0f, 0xFFFFFFFF);
-                    AddPoint(2f, 2f, 0f, 0xFFFFFFFF);
-                    AddPoint(0f, 2f, 0f, 0xFFFFFFFF);
+                    AddPoint(1f, 0f, 0f, 0xFFFFFFFF);
+                    AddPoint(1f, 1f, 0f, 0xFFFFFFFF);
+                    AddPoint(0f, 1f, 0f, 0xFFFFFFFF);
                     AddPoint(0f, 0f, 0f, 0xFFFFFFFF);
                     d3dimg.Lock();
                     // Repeatedly calling SetBackBuffer with the same IntPtr is 

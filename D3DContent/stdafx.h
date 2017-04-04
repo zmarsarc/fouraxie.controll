@@ -24,4 +24,12 @@
 #define IFCOOM(x) { if ((x) == NULL) { hr = E_OUTOFMEMORY; IFC(hr); } }
 #define SAFE_RELEASE(x) { if (x) { x->Release(); x = NULL; } }
 
+struct CUSTOMVERTEX
+{
+	FLOAT x, y, z;
+	DWORD color;
+};
+
+#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
+
 // TODO: reference additional headers your program requires here

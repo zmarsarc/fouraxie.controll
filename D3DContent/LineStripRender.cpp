@@ -1,53 +1,15 @@
 #include "stdafx.h"
 #include "LineStripRender.h"
 
-
-//+-----------------------------------------------------------------------------
-//
-//  CTriangleRenderer
-//
-//      Subclass of CRenderer that renders a single, spinning triangle
-//
-//------------------------------------------------------------------------------
-
-struct CUSTOMVERTEX
-{
-	FLOAT x, y, z;
-	DWORD color;
-};
-
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
-
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CTriangleRenderer ctor
-//
-//------------------------------------------------------------------------------
 CLineStripRender::CLineStripRender() : CRenderer(), m_pd3dVB(NULL)
 {
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CTriangleRenderer dtor
-//
-//------------------------------------------------------------------------------
 CLineStripRender::~CLineStripRender()
 {
 	SAFE_RELEASE(m_pd3dVB);
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CTriangleRenderer::Create
-//
-//  Synopsis:
-//      Creates the renderer
-//
-//------------------------------------------------------------------------------
 HRESULT CLineStripRender::Create(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter, CRenderer **ppRenderer)
 {
 	HRESULT hr = S_OK;
@@ -66,16 +28,6 @@ Cleanup:
 	return hr;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CTriangleRenderer::Init
-//
-//  Synopsis:
-//      Override of CRenderer::Init that calls base to create the device and 
-//      then creates the CTriangleRenderer-specific resources
-//
-//------------------------------------------------------------------------------
 HRESULT CLineStripRender::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter)
 {
 	HRESULT hr = S_OK;
@@ -118,15 +70,6 @@ Cleanup:
 	return hr;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CTriangleRenderer::Render
-//
-//  Synopsis:
-//      Renders the rotating triangle
-//
-//------------------------------------------------------------------------------
 HRESULT CLineStripRender::Render()
 {
 	HRESULT hr = S_OK;

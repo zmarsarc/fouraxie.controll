@@ -1,26 +1,6 @@
 #include "stdafx.h"
 #include "TriangleRenderer.h"
 
-#include <d3dx9.h>
-
-//+-----------------------------------------------------------------------------
-//
-//  CTriangleRenderer
-//
-//      Subclass of CRenderer that renders a single, spinning triangle
-//
-//------------------------------------------------------------------------------
-
-#include "StdAfx.h"
-
-struct CUSTOMVERTEX
-{
-	FLOAT x, y, z;
-	DWORD color;
-};
-
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
-
 //+-----------------------------------------------------------------------------
 //
 //  Member:

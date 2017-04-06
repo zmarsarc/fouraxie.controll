@@ -106,7 +106,7 @@ extern "C" void WINAPI Destroy()
 	pManager = NULL;
 }
 
-extern "C" HRESULT WINAPI MoveCameraTo(float x, float y, float z) {
+extern "C" HRESULT WINAPI CameraMoveTo(float x, float y, float z) {
 	
 	assert(pManager);
 
@@ -115,6 +115,48 @@ extern "C" HRESULT WINAPI MoveCameraTo(float x, float y, float z) {
 	CRenderer* currentRenderer;
 	IFC(pManager->GetCurrentRenderer(&currentRenderer));
 	IFC(currentRenderer->CameraMoveTo(des));
+
+Cleanup:
+	return hr;
+}
+
+extern "C" HRESULT WINAPI CameraLookAt(float x, float y, float z) {
+
+	assert(pManager);
+
+	HRESULT hr = S_OK;
+	D3DXVECTOR3 des = { x, y, z };
+	CRenderer* currentRenderer;
+	IFC(pManager->GetCurrentRenderer(&currentRenderer));
+	IFC(currentRenderer->CameraLookAt(des));
+
+Cleanup:
+	return hr;
+}
+
+extern "C" HRESULT WINAPI CameraMove(float x, float y, float z) {
+
+	assert(pManager);
+
+	HRESULT hr = S_OK;
+	D3DXVECTOR3 des = { x, y, z };
+	CRenderer* currentRenderer;
+	IFC(pManager->GetCurrentRenderer(&currentRenderer));
+	IFC(currentRenderer->CameraMove(des));
+
+Cleanup:
+	return hr;
+}
+
+extern "C" HRESULT WINAPI CameraRotate(float x, float y, float z) {
+
+	assert(pManager);
+
+	HRESULT hr = S_OK;
+	D3DXVECTOR3 dir = { x, y, z };
+	CRenderer* currentRenderer;
+	IFC(pManager->GetCurrentRenderer(&currentRenderer));
+	IFC(currentRenderer->CameraRotate(dir));
 
 Cleanup:
 	return hr;

@@ -16,6 +16,9 @@ public:
 	
 	// Camera Control
 	virtual HRESULT CameraMoveTo(D3DXVECTOR3 des) = 0;
+	virtual HRESULT CameraLookAt(D3DXVECTOR3 des) = 0;
+	virtual HRESULT CameraMove(D3DXVECTOR3 dir) = 0;
+	virtual HRESULT CameraRotate(D3DXVECTOR3 rad) = 0;
 
 protected:
 	CRenderer();

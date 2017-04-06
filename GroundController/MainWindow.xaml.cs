@@ -172,6 +172,7 @@ namespace GroundController {
         DispatcherTimer _adapterTimer;
         TimeSpan _lastRender;
 
+        #region Import methods
         // Import the methods exported by the unmanaged Direct3D content.
 
         [DllImport("D3DContent.dll")]
@@ -210,38 +211,62 @@ namespace GroundController {
         static extern void Destroy();
 
         [DllImport("D3DContent.dll")]
-        static extern int MoveCameraTo(float x, float y, float z);
+        static extern int CameraMoveTo(float x, float y, float z);
+
+        [DllImport("D3DContent.dll")]
+        static extern int CameraLookAt(float x, float y, float z);
+
+        [DllImport("D3DContent.dll")]
+        static extern int CameraMove(float x, float y, float z);
+
+        [DllImport("D3DContent.dll")]
+        static extern int CameraRotate(float x, float y, float z);
+
+        #endregion
 
         // event handler
 
-        private bool isMouseDown = false;
+        private bool isMouseLeftDown = false;
+        private bool isMouseRightDow = false;
+
         private void imgelt_MouseDown(object sender, MouseButtonEventArgs e) {
-            isMouseDown = true;
+            isMouseLeftDown = (e.LeftButton == MouseButtonState.Pressed);
+            isMouseRightDow = (e.RightButton == MouseButtonState.Pressed);
         }
 
         private void imgelt_MouseUp(object sender, MouseButtonEventArgs e) {
-            isMouseDown = false;
+            isMouseLeftDown = (e.LeftButton == MouseButtonState.Pressed);
+            isMouseRightDow = (e.RightButton == MouseButtonState.Pressed);
         }
 
         // camera control
-
-        private float cameraX = 0f;
-        private float cameraY = 0f;
-        private float cameraZ = -5f;
+        private float depth = -5.0f;
         private Point lastPos;
 
         private void imgelt_MouseMove(object sender, MouseEventArgs e) {
-            if (isMouseDown) {
+            if (isMouseLeftDown || isMouseRightDow) {
                 var pos = e.GetPosition(this);
-                cameraX -= (float)(pos.X - lastPos.X) * 0.03f;
-                cameraY += (float)(pos.Y - lastPos.Y) * 0.03f;
-                HRESULT.Check(MoveCameraTo(cameraX, cameraY, cameraZ));
+
+                float xPos = (float)(pos.X - lastPos.X);
+                float yPos = (float)(pos.Y - lastPos.Y);
+
+                if (isMouseLeftDown) {
+                    HRESULT.Check(CameraMove(xPos * 0.03f, yPos * 0.03f, 0.0f));
+                }
+                else if (isMouseRightDow) {
+                    HRESULT.Check(CameraRotate(-yPos * 0.001f, -xPos * 0.001f, 0.0f));
+                }
+                else {
+                    return;
+                }
+
+                lastPos = e.GetPosition(this);
             }
-            lastPos = e.GetPosition(this);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
-            HRESULT.Check(MoveCameraTo(0.0f, 0.0f, -5.0f));
+            HRESULT.Check(CameraMoveTo(0.0f, 0.0f, -5.0f));
+            HRESULT.Check(CameraLookAt(0.0f, 0.0f, 0.0f));
         }
     }
 

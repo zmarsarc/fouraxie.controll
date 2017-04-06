@@ -37,6 +37,11 @@ HRESULT CLineStripRender::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd
 	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 
+	curEyePoint = vEyePt;
+	curLookAt = vLookatPt;
+	curUpVec = vUpVec;
+	lookDirection = {0.0f, 0.0f, 1.0f};
+
 	// Call base to create the device and render target
 	IFC(CRenderer::Init(pD3D, pD3DEx, hwnd, uAdapter));
 
@@ -92,11 +97,78 @@ HRESULT CLineStripRender::CameraMoveTo(D3DXVECTOR3 des) {
 
 	HRESULT hr = S_OK;
 	D3DXMATRIXA16 matView;
-	D3DXVECTOR3 vLookatPt(des.x, des.y, des.z + 5.0f);
-	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
+	D3DXVECTOR3 vLookatPt = des + lookDirection;
 
-	D3DXMatrixLookAtLH(&matView, &des, &vLookatPt, &vUpVec);
+	D3DXMatrixLookAtLH(&matView, &des, &vLookatPt, &curUpVec);
 	IFC(m_pd3dDevice->SetTransform(D3DTS_VIEW, &matView));
+
+	curEyePoint = des;
+	curLookAt = vLookatPt;
+
+Cleanup:
+	return hr;
+}
+
+HRESULT CLineStripRender::CameraLookAt(D3DXVECTOR3 des) {
+	
+	HRESULT hr = S_OK;
+	D3DXMATRIXA16 matView;
+
+	D3DXMatrixLookAtLH(&matView, &curEyePoint, &des, &curUpVec);
+	IFC(m_pd3dDevice->SetTransform(D3DTS_VIEW, &matView));
+
+	curLookAt = des;
+	lookDirection = des - curEyePoint;
+	lookDirection /= sqrtf(
+		lookDirection.x * lookDirection.x + lookDirection.y * lookDirection.y + lookDirection.z * lookDirection.z
+	);
+
+Cleanup:
+	return hr;
+}
+
+HRESULT CLineStripRender::CameraMove(D3DXVECTOR3 dir) {
+
+	HRESULT hr = S_OK;
+	D3DXMATRIXA16 matView;
+	D3DXVECTOR3 vEyePoint = curEyePoint + dir;
+	D3DXVECTOR3 vLookatPt = vEyePoint + lookDirection;
+
+	D3DXMatrixLookAtLH(&matView, &vEyePoint, &vLookatPt, &curUpVec);
+	IFC(m_pd3dDevice->SetTransform(D3DTS_VIEW, &matView));
+
+	curEyePoint = vEyePoint;
+	curLookAt = vLookatPt;
+
+Cleanup:
+	return hr;
+}
+
+HRESULT CLineStripRender::CameraRotate(D3DXVECTOR3 rad) {
+
+	HRESULT hr = S_OK;
+	D3DXMATRIXA16 matView;
+	D3DXVECTOR3 dir = lookDirection;
+
+	// rotate x
+	dir.y = dir.y * cos(rad.x) - dir.z * sin(rad.x);
+	dir.z = dir.y * sin(rad.x) + dir.z * cos(rad.x);
+
+	// rotate y
+	dir.x = dir.x * cos(rad.y) + dir.z * sin(rad.y);
+	dir.z = -dir.x * sin(rad.y) + dir.z * cos(rad.z);
+
+	// rotate z
+	dir.x = dir.x * cos(rad.z) - dir.y * sin(rad.z);
+	dir.y = dir.x * sin(rad.z) + dir.y * cos(rad.z);
+
+	D3DXVECTOR3 vLookatPt = curEyePoint + dir;
+
+	D3DXMatrixLookAtLH(&matView, &curEyePoint, &vLookatPt, &curUpVec);
+	IFC(m_pd3dDevice->SetTransform(D3DTS_VIEW, &matView));
+
+	curLookAt = vLookatPt;
+	lookDirection = dir;
 
 Cleanup:
 	return hr;

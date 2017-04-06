@@ -59,6 +59,20 @@ HRESULT CTriangleRenderer::CameraMoveTo(D3DXVECTOR3 des) {
 	return S_OK;
 }
 
+HRESULT CTriangleRenderer::CameraLookAt(D3DXVECTOR3 des) {
+	return S_OK;
+}
+
+HRESULT CTriangleRenderer::CameraMove(D3DXVECTOR3 dir)
+{
+	return S_OK;
+}
+
+HRESULT CTriangleRenderer::CameraRotate(D3DXVECTOR3 rad)
+{
+	return S_OK;
+}
+
 //+-----------------------------------------------------------------------------
 //
 //  Member:

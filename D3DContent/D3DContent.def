@@ -12,4 +12,7 @@ AddPoint
 GetBackBufferNoRef  
 Render  
 Destroy
-MoveCameraTo
+CameraMoveTo
+CameraLookAt
+CameraMove
+CameraRotate

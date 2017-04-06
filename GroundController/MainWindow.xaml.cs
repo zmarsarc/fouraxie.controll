@@ -208,6 +208,23 @@ namespace GroundController {
 
         [DllImport("D3DContent.dll")]
         static extern void Destroy();
+
+        // event handler
+
+        private bool isMouseDown = false;
+        private void imgelt_MouseDown(object sender, MouseButtonEventArgs e) {
+            isMouseDown = true;
+        }
+
+        private void imgelt_MouseUp(object sender, MouseButtonEventArgs e) {
+            isMouseDown = false;
+        }
+
+        private void imgelt_MouseMove(object sender, MouseEventArgs e) {
+            if (isMouseDown) {
+
+            }
+        }
     }
 
     public static class HRESULT {

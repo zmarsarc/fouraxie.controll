@@ -209,6 +209,9 @@ namespace GroundController {
         [DllImport("D3DContent.dll")]
         static extern void Destroy();
 
+        [DllImport("D3DContent.dll")]
+        static extern int MoveCameraTo(float x, float y, float z);
+
         // event handler
 
         private bool isMouseDown = false;
@@ -220,10 +223,25 @@ namespace GroundController {
             isMouseDown = false;
         }
 
+        // camera control
+
+        private float cameraX = 0f;
+        private float cameraY = 0f;
+        private float cameraZ = -5f;
+        private Point lastPos;
+
         private void imgelt_MouseMove(object sender, MouseEventArgs e) {
             if (isMouseDown) {
-
+                var pos = e.GetPosition(this);
+                cameraX -= (float)(pos.X - lastPos.X) * 0.03f;
+                cameraY += (float)(pos.Y - lastPos.Y) * 0.03f;
+                HRESULT.Check(MoveCameraTo(cameraX, cameraY, cameraZ));
             }
+            lastPos = e.GetPosition(this);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
+            HRESULT.Check(MoveCameraTo(0.0f, 0.0f, -5.0f));
         }
     }
 

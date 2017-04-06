@@ -12,5 +12,6 @@
                 <i:D3DImage x:Name="d3dimg" />
             </Image.Source>
         </Image>
+        <Button Click="Button_Click" Margin="472,298,0,0">reset</Button>
     </Grid>
 </Window>

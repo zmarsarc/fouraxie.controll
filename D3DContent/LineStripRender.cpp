@@ -88,6 +88,20 @@ HRESULT CLineStripRender::AddPoint(float x, float y, float z, DWORD color) {
 	return hr;
 }
 
+HRESULT CLineStripRender::CameraMoveTo(D3DXVECTOR3 des) {
+
+	HRESULT hr = S_OK;
+	D3DXMATRIXA16 matView;
+	D3DXVECTOR3 vLookatPt(des.x, des.y, des.z + 5.0f);
+	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
+
+	D3DXMatrixLookAtLH(&matView, &des, &vLookatPt, &vUpVec);
+	IFC(m_pd3dDevice->SetTransform(D3DTS_VIEW, &matView));
+
+Cleanup:
+	return hr;
+}
+
 HRESULT CLineStripRender::Render()
 {
 	HRESULT hr = S_OK;

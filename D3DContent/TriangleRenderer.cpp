@@ -55,6 +55,10 @@ HRESULT CTriangleRenderer::AddPoint(float x, float y, float z, DWORD color) {
 	return hr;
 }
 
+HRESULT CTriangleRenderer::CameraMoveTo(D3DXVECTOR3 des) {
+	return S_OK;
+}
+
 //+-----------------------------------------------------------------------------
 //
 //  Member:

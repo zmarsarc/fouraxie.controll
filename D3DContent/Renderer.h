@@ -13,6 +13,9 @@ public:
 	virtual HRESULT Render() = 0;
 	virtual HRESULT AddPoint(float x, float y, float z, DWORD color) = 0;
 	IDirect3DSurface9 *GetSurfaceNoRef() { return m_pd3dRTS; }
+	
+	// Camera Control
+	virtual HRESULT CameraMoveTo(D3DXVECTOR3 des) = 0;
 
 protected:
 	CRenderer();

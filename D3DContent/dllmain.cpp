@@ -105,3 +105,17 @@ extern "C" void WINAPI Destroy()
 	delete pManager;
 	pManager = NULL;
 }
+
+extern "C" HRESULT WINAPI MoveCameraTo(float x, float y, float z) {
+	
+	assert(pManager);
+
+	HRESULT hr = S_OK;
+	D3DXVECTOR3 des = { x, y, z };
+	CRenderer* currentRenderer;
+	IFC(pManager->GetCurrentRenderer(&currentRenderer));
+	IFC(currentRenderer->CameraMoveTo(des));
+
+Cleanup:
+	return hr;
+}

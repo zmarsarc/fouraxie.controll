@@ -156,7 +156,7 @@ HRESULT CLineStripRender::CameraRotate(D3DXVECTOR3 rad) {
 
 	// rotate y
 	dir.x = dir.x * cos(rad.y) + dir.z * sin(rad.y);
-	dir.z = -dir.x * sin(rad.y) + dir.z * cos(rad.z);
+	dir.z = -dir.x * sin(rad.y) + dir.z * cos(rad.y);
 
 	// rotate z
 	dir.x = dir.x * cos(rad.z) - dir.y * sin(rad.z);

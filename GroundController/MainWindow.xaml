@@ -7,7 +7,8 @@
         <Image x:Name="imgelt" 
                Mouse.MouseDown="imgelt_MouseDown"
                Mouse.MouseUp="imgelt_MouseUp"
-               Mouse.MouseMove="imgelt_MouseMove">
+               Mouse.MouseMove="imgelt_MouseMove"
+               Mouse.MouseWheel="imgelt_MouseWheel">
             <Image.Source>
                 <i:D3DImage x:Name="d3dimg" />
             </Image.Source>

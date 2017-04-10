@@ -21,102 +21,121 @@ using System.Runtime.InteropServices;
 using System.Security.Permissions;
 
 namespace GroundController {
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
+
+        #region Constructor and disconstructor
+
         public MainWindow() {
+
             InitializeComponent();
+            InitD3DImage();
 
-            // Set up the initial state for the D3DImage.
-            HRESULT.Check(SetSize(512, 512));
-            HRESULT.Check(SetAlpha(false));
-            HRESULT.Check(SetNumDesiredSamples(4));
-
-            // 
-            // Optional: Subscribing to the IsFrontBufferAvailableChanged event.
-            //
-            // If you don't render every frame (e.g. you only render in 
-            // reaction to a button click), you should subscribe to the
-            // IsFrontBufferAvailableChanged event to be notified when rendered content 
-            // is no longer being displayed. This event also notifies you when 
-            // the D3DImage is capable of being displayed again. 
-
-            // For example, in the button click case, if you don't render again when 
-            // the IsFrontBufferAvailable property is set to true, your 
-            // D3DImage won't display anything until the next button click.
-            //
-            // Because this application renders every frame, there is no need to
-            // handle the IsFrontBufferAvailableChanged event.
-            // 
             CompositionTarget.Rendering += new EventHandler(CompositionTarget_Rendering);
 
-            //
-            // Optional: Multi-adapter optimization
-            //
-            // The surface is created initially on a particular adapter.
-            // If the WPF window is dragged to another adapter, WPF
-            // ensures that the D3DImage still shows up on the new
-            // adapter. 
-            //
-            // This process is slow on Windows XP.
-            //
-            // Performance is better on Vista with a 9Ex device. It's only 
-            // slow when the D3DImage crosses a video-card boundary.
-            //
-            // To work around this issue, you can move your surface when
-            // the D3DImage is displayed on another adapter. To
-            // determine when that is the case, transform a point on the
-            // D3DImage into screen space and find out which adapter
-            // contains that screen space point.
-            //
-            // When your D3DImage straddles two adapters, nothing  
-            // can be done, because one will be updating slowly.
-            //
-            _adapterTimer = new DispatcherTimer();
-            _adapterTimer.Tick += new EventHandler(AdapterTimer_Tick);
-            _adapterTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
-            _adapterTimer.Start();
+            SetMultiAdapterOptimization();
+            SetupSurfaceResizing();
 
-            //
-            // Optional: Surface resizing
-            //
-            // The D3DImage is scaled when WPF renders it at a size 
-            // different from the natural size of the surface. If the
-            // D3DImage is scaled up significantly, image quality 
-            // degrades. 
-            // 
-            // To avoid this, you can either create a very large
-            // texture initially, or you can create new surfaces as
-            // the size changes. Below is a very simple example of
-            // how to do the latter.
-            //
-            // By creating a timer at Render priority, you are guaranteed
-            // that new surfaces are created while the element
-            // is still being arranged. A 200 ms interval gives
-            // a good balance between image quality and performance.
-            // You must be careful not to create new surfaces too 
-            // frequently. Frequently allocating a new surface may 
-            // fragment or exhaust video memory. This issue is more 
-            // significant on XDDM than it is on WDDM, because WDDM 
-            // can page out video memory.
-            //
-            // Another approach is deriving from the Image class, 
-            // participating in layout by overriding the ArrangeOverride method, and
-            // updating size in the overriden method. Performance will degrade
-            // if you resize too frequently.
-            //
-            // Blurry D3DImages can still occur due to subpixel 
-            // alignments. 
-            //
+            SetupModelFileReader();
+        }
+
+        ~MainWindow() {
+            Destroy();
+        }
+
+        #endregion
+
+        #region D3D host
+
+        DispatcherTimer _sizeTimer;
+        DispatcherTimer _adapterTimer;
+        TimeSpan _lastRender;
+
+        /// <summary>
+        ///
+        /// Optional: Surface resizing
+        ///
+        /// The D3DImage is scaled when WPF renders it at a size 
+        /// different from the natural size of the surface. If the
+        /// D3DImage is scaled up significantly, image quality 
+        /// degrades. 
+        /// 
+        /// To avoid this, you can either create a very large
+        /// texture initially, or you can create new surfaces as
+        /// the size changes. Below is a very simple example of
+        /// how to do the latter.
+        ///
+        /// By creating a timer at Render priority, you are guaranteed
+        /// that new surfaces are created while the element
+        /// is still being arranged. A 200 ms interval gives
+        /// a good balance between image quality and performance.
+        /// You must be careful not to create new surfaces too 
+        /// frequently. Frequently allocating a new surface may 
+        /// fragment or exhaust video memory. This issue is more 
+        /// significant on XDDM than it is on WDDM, because WDDM 
+        /// can page out video memory.
+        ///
+        /// Another approach is deriving from the Image class, 
+        /// participating in layout by overriding the ArrangeOverride method, and
+        /// updating size in the overriden method. Performance will degrade
+        /// if you resize too frequently.
+        ///
+        /// Blurry D3DImages can still occur due to subpixel 
+        /// alignments. 
+        /// </summary>
+        private void SetupSurfaceResizing() {
             _sizeTimer = new DispatcherTimer(DispatcherPriority.Render);
             _sizeTimer.Tick += new EventHandler(SizeTimer_Tick);
             _sizeTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
             _sizeTimer.Start();
         }
 
-        ~MainWindow() {
-            Destroy();
+        private void InitD3DImage() {
+            HRESULT.Check(SetSize(512, 512));
+            HRESULT.Check(SetAlpha(false));
+            HRESULT.Check(SetNumDesiredSamples(4));
+        }
+
+        /// <summary>
+        /// 
+        /// Optional: Surface resizing
+        ///
+        /// The D3DImage is scaled when WPF renders it at a size 
+        /// different from the natural size of the surface. If the
+        /// D3DImage is scaled up significantly, image quality 
+        /// degrades. 
+        /// 
+        /// To avoid this, you can either create a very large
+        /// texture initially, or you can create new surfaces as
+        /// the size changes. Below is a very simple example of
+        /// how to do the latter.
+        ///
+        /// By creating a timer at Render priority, you are guaranteed
+        /// that new surfaces are created while the element
+        /// is still being arranged. A 200 ms interval gives
+        /// a good balance between image quality and performance.
+        /// You must be careful not to create new surfaces too 
+        /// frequently. Frequently allocating a new surface may 
+        /// fragment or exhaust video memory. This issue is more 
+        /// significant on XDDM than it is on WDDM, because WDDM 
+        /// can page out video memory.
+        ///
+        /// Another approach is deriving from the Image class, 
+        /// participating in layout by overriding the ArrangeOverride method, and
+        /// updating size in the overriden method. Performance will degrade
+        /// if you resize too frequently.
+        ///
+        /// Blurry D3DImages can still occur due to subpixel 
+        /// alignments. 
+        /// </summary>
+        private void SetMultiAdapterOptimization() {
+            _adapterTimer = new DispatcherTimer();
+            _adapterTimer.Tick += new EventHandler(AdapterTimer_Tick);
+            _adapterTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            _adapterTimer.Start();
         }
 
         void AdapterTimer_Tick(object sender, EventArgs e) {
@@ -150,11 +169,18 @@ namespace GroundController {
                 IntPtr pSurface = IntPtr.Zero;
                 HRESULT.Check(GetBackBufferNoRef(out pSurface));
                 if (pSurface != IntPtr.Zero) {
+
                     AddPoint(0f, 0f, 0f, 0xFFFFFFFF);
                     AddPoint(1f, 0f, 0f, 0xFFFFFFFF);
                     AddPoint(1f, 1f, 0f, 0xFFFFFFFF);
                     AddPoint(0f, 1f, 0f, 0xFFFFFFFF);
                     AddPoint(0f, 0f, 0f, 0xFFFFFFFF);
+                    AddPoint(0f, 0f, 1f, 0xFFFFFFFF);
+                    AddPoint(1f, 0f, 1f, 0xFFFFFFFF);
+                    AddPoint(1f, 1f, 1f, 0xFFFFFFFF);
+                    AddPoint(0f, 1f, 1f, 0xFFFFFFFF);
+                    AddPoint(0f, 0f, 1f, 0xFFFFFFFF);
+
                     d3dimg.Lock();
                     // Repeatedly calling SetBackBuffer with the same IntPtr is 
                     // a no-op. There is no performance penalty.
@@ -162,15 +188,24 @@ namespace GroundController {
                     HRESULT.Check(Render());
                     d3dimg.AddDirtyRect(new Int32Rect(0, 0, d3dimg.PixelWidth, d3dimg.PixelHeight));
                     d3dimg.Unlock();
-
                     _lastRender = args.RenderingTime;
                 }
             }
         }
 
-        DispatcherTimer _sizeTimer;
-        DispatcherTimer _adapterTimer;
-        TimeSpan _lastRender;
+        #endregion
+
+        #region Setup model file
+
+        InputAdapter modFile;
+        List<D3DObject> objects;
+
+        private void SetupModelFileReader() {
+            modFile = new InputAdapter();
+            objects = modFile.Read("build.3ds");
+        }
+
+        #endregion
 
         #region Import methods
         // Import the methods exported by the unmanaged Direct3D content.
@@ -224,50 +259,57 @@ namespace GroundController {
 
         #endregion
 
-        // event handler
+        #region Event handlers
 
         private bool isMouseLeftDown = false;
-        private bool isMouseRightDow = false;
+        private bool isMouseRightDown = false;
 
         private void imgelt_MouseDown(object sender, MouseButtonEventArgs e) {
             isMouseLeftDown = (e.LeftButton == MouseButtonState.Pressed);
-            isMouseRightDow = (e.RightButton == MouseButtonState.Pressed);
+            isMouseRightDown = (e.RightButton == MouseButtonState.Pressed);
         }
 
         private void imgelt_MouseUp(object sender, MouseButtonEventArgs e) {
             isMouseLeftDown = (e.LeftButton == MouseButtonState.Pressed);
-            isMouseRightDow = (e.RightButton == MouseButtonState.Pressed);
+            isMouseRightDown = (e.RightButton == MouseButtonState.Pressed);
         }
 
-        // camera control
-        private float depth = -5.0f;
+        #endregion
+
+        #region Camera control
+
         private Point lastPos;
 
         private void imgelt_MouseMove(object sender, MouseEventArgs e) {
-            if (isMouseLeftDown || isMouseRightDow) {
-                var pos = e.GetPosition(this);
 
-                float xPos = (float)(pos.X - lastPos.X);
-                float yPos = (float)(pos.Y - lastPos.Y);
+            var pos = e.GetPosition(this);
 
-                if (isMouseLeftDown) {
-                    HRESULT.Check(CameraMove(xPos * 0.03f, yPos * 0.03f, 0.0f));
-                }
-                else if (isMouseRightDow) {
-                    HRESULT.Check(CameraRotate(-yPos * 0.001f, -xPos * 0.001f, 0.0f));
-                }
-                else {
-                    return;
-                }
+            float xPos = (float)(pos.X - lastPos.X);
+            float yPos = (float)(pos.Y - lastPos.Y);
 
-                lastPos = e.GetPosition(this);
+            if (isMouseLeftDown) {
+                HRESULT.Check(CameraMove(xPos * 0.03f, yPos * 0.03f, 0.0f));
             }
+            else if (isMouseRightDown) {
+                HRESULT.Check(CameraRotate(-yPos * 0.01f, -xPos * 0.01f, 0f));
+            }
+            else {
+                return;
+            }
+
+            lastPos = pos;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
             HRESULT.Check(CameraMoveTo(0.0f, 0.0f, -5.0f));
             HRESULT.Check(CameraLookAt(0.0f, 0.0f, 0.0f));
         }
+
+        private void imgelt_MouseWheel(object sender, MouseWheelEventArgs e) {
+            HRESULT.Check(CameraMove(0.0f, 0.0f, e.Delta *  0.005f));
+        }
+
+        #endregion
     }
 
     public static class HRESULT {

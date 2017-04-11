@@ -22,7 +22,7 @@ typedef HRESULT(WINAPI *DIRECT3DCREATE9EXFUNCTION)(UINT SDKVersion, IDirect3D9Ex
 //      CRendererManager ctor
 //
 //------------------------------------------------------------------------------
-CRendererManager::CRendererManager()
+DeviceManager::DeviceManager()
 	:
 	m_pD3D(NULL),
 	m_pD3DEx(NULL),
@@ -45,7 +45,7 @@ CRendererManager::CRendererManager()
 //      CRendererManager dtor
 //
 //------------------------------------------------------------------------------
-CRendererManager::~CRendererManager()
+DeviceManager::~DeviceManager()
 {
 	DestroyResources();
 
@@ -66,11 +66,11 @@ CRendererManager::~CRendererManager()
 //
 //------------------------------------------------------------------------------
 HRESULT
-CRendererManager::Create(CRendererManager **ppManager)
+DeviceManager::Create(DeviceManager **ppManager)
 {
 	HRESULT hr = S_OK;
 
-	*ppManager = new CRendererManager();
+	*ppManager = new DeviceManager();
 	IFCOOM(*ppManager);
 
 Cleanup:
@@ -87,7 +87,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------------
 HRESULT
-CRendererManager::EnsureRenderers()
+DeviceManager::EnsureRenderers()
 {
 	HRESULT hr = S_OK;
 
@@ -123,7 +123,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------------
 HRESULT
-CRendererManager::EnsureHWND()
+DeviceManager::EnsureHWND()
 {
 	HRESULT hr = S_OK;
 
@@ -174,7 +174,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------------
 HRESULT
-CRendererManager::EnsureD3DObjects()
+DeviceManager::EnsureD3DObjects()
 {
 	HRESULT hr = S_OK;
 
@@ -224,7 +224,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------------
 void
-CRendererManager::CleanupInvalidDevices()
+DeviceManager::CleanupInvalidDevices()
 {
 	for (UINT i = 0; i < m_cAdapters; ++i)
 	{
@@ -248,7 +248,7 @@ CRendererManager::CleanupInvalidDevices()
 //
 //------------------------------------------------------------------------------
 HRESULT
-CRendererManager::GetBackBufferNoRef(IDirect3DSurface9 **ppSurface)
+DeviceManager::GetBackBufferNoRef(IDirect3DSurface9 **ppSurface)
 {
 	HRESULT hr = S_OK;
 
@@ -312,7 +312,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------------
 HRESULT
-CRendererManager::TestSurfaceSettings()
+DeviceManager::TestSurfaceSettings()
 {
 	HRESULT hr = S_OK;
 
@@ -384,7 +384,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------------
 void
-CRendererManager::DestroyResources()
+DeviceManager::DestroyResources()
 {
 	SAFE_RELEASE(m_pD3D);
 	SAFE_RELEASE(m_pD3DEx);
@@ -412,7 +412,7 @@ CRendererManager::DestroyResources()
 //
 //------------------------------------------------------------------------------
 void
-CRendererManager::SetSize(UINT uWidth, UINT uHeight)
+DeviceManager::SetSize(UINT uWidth, UINT uHeight)
 {
 	if (uWidth != m_uWidth || uHeight != m_uHeight)
 	{
@@ -432,7 +432,7 @@ CRendererManager::SetSize(UINT uWidth, UINT uHeight)
 //
 //------------------------------------------------------------------------------
 void
-CRendererManager::SetAlpha(bool fUseAlpha)
+DeviceManager::SetAlpha(bool fUseAlpha)
 {
 	if (fUseAlpha != m_fUseAlpha)
 	{
@@ -452,7 +452,7 @@ CRendererManager::SetAlpha(bool fUseAlpha)
 //
 //------------------------------------------------------------------------------
 void
-CRendererManager::SetNumDesiredSamples(UINT uNumSamples)
+DeviceManager::SetNumDesiredSamples(UINT uNumSamples)
 {
 	if (m_uNumSamples != uNumSamples)
 	{
@@ -471,7 +471,7 @@ CRendererManager::SetNumDesiredSamples(UINT uNumSamples)
 //
 //------------------------------------------------------------------------------
 void
-CRendererManager::SetAdapter(POINT screenSpacePoint)
+DeviceManager::SetAdapter(POINT screenSpacePoint)
 {
 	CleanupInvalidDevices();
 
@@ -495,7 +495,7 @@ CRendererManager::SetAdapter(POINT screenSpacePoint)
 	}
 }
 
-HRESULT CRendererManager::GetCurrentRenderer(CRenderer** pRenderer) {
+HRESULT DeviceManager::GetCurrentRenderer(CRenderer** pRenderer) {
 	HRESULT hr = S_OK;
 
 	if (!m_pCurrentRenderer) {
@@ -518,7 +518,7 @@ HRESULT CRendererManager::GetCurrentRenderer(CRenderer** pRenderer) {
 //
 //------------------------------------------------------------------------------
 HRESULT
-CRendererManager::Render()
+DeviceManager::Render()
 {
 	return m_pCurrentRenderer ? m_pCurrentRenderer->Render() : S_OK;
 }

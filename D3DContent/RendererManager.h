@@ -4,11 +4,11 @@
 
 class CRenderer;
 
-class CRendererManager
+class DeviceManager
 {
 public:
-	static HRESULT Create(CRendererManager **ppManager);
-	~CRendererManager();
+	static HRESULT Create(DeviceManager **ppManager);
+	~DeviceManager();
 
 	HRESULT EnsureDevices();
 
@@ -24,7 +24,7 @@ public:
 	HRESULT Render();
 
 private:
-	CRendererManager();
+	DeviceManager();
 
 	void CleanupInvalidDevices();
 	HRESULT EnsureRenderers();

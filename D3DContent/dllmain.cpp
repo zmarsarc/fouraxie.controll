@@ -17,11 +17,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	return TRUE;
 }
 
-static CRendererManager *pManager = NULL;
+static DeviceManager *pManager = NULL;
 
 static HRESULT EnsureRendererManager()
 {
-	return pManager ? S_OK : CRendererManager::Create(&pManager);
+	return pManager ? S_OK : DeviceManager::Create(&pManager);
 }
 
 extern "C" HRESULT WINAPI SetSize(UINT uWidth, UINT uHeight)

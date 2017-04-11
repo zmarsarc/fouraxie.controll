@@ -250,7 +250,7 @@ namespace GroundController {
         #region Camera control
 
         private Point lastPos;
-        private CameraController camera = new CameraController();
+        private CameraController camera = new CameraController(0.03f, 0.03f, 0.005f, 0.01f, 0.01f, 0f);
 
         private void imgelt_MouseMove(object sender, MouseEventArgs e) {
 
@@ -261,10 +261,10 @@ namespace GroundController {
             lastPos = pos;
 
             if (e.LeftButton == MouseButtonState.Pressed) {
-                camera.Move(xPos * 0.03f, yPos * 0.03f, 0.0f);
+                camera.Move(-xPos, yPos, 0.0f);
             }
             else if (e.RightButton == MouseButtonState.Pressed) {
-                camera.Rotate(-yPos * 0.01f, -xPos * 0.01f, 0f);
+                camera.Rotate(yPos, xPos, 0f);
             }
             else {
                 return;
@@ -277,7 +277,7 @@ namespace GroundController {
         }
 
         private void imgelt_MouseWheel(object sender, MouseWheelEventArgs e) {
-            camera.Move(0.0f, 0.0f, e.Delta * 0.005f);
+            camera.Move(0.0f, 0.0f, e.Delta);
         }
 
         #endregion
@@ -292,12 +292,30 @@ namespace GroundController {
 
     public class CameraController {
 
+        private float xMoveSensitivity;
+        private float yMoveSensitivity;
+        private float zMoveSensitivity;
+        private float xRotationSensitivity;
+        private float yRotationSensitivity;
+        private float zRotationSensitivity;
+
+        public CameraController(
+            float xMoveSens, float yMoveSens, float zMoveSens,
+            float xRotationSens, float yRotationSens, float zRotationSens) {
+            xMoveSensitivity = xMoveSens;
+            yMoveSensitivity = yMoveSens;
+            zMoveSensitivity = zMoveSens;
+            xRotationSensitivity = xRotationSens;
+            yRotationSensitivity = yRotationSens;
+            zRotationSensitivity = zRotationSens;
+        }
+
         public void MoveTo(float x, float y, float z) {
             HRESULT.Check(CameraMoveTo(x, y, z));
         }
 
         public void Move(float x, float y, float z) {
-            HRESULT.Check(CameraMove(x, y, z));
+            HRESULT.Check(CameraMove(x * xMoveSensitivity, y * yMoveSensitivity, z * zMoveSensitivity));
         }
 
         public void LookAt(float x, float y, float z) {
@@ -305,7 +323,7 @@ namespace GroundController {
         }
 
         public void Rotate(float x, float y, float z) {
-            HRESULT.Check(CameraRotate(x, y, z));
+            HRESULT.Check(CameraRotate(x * xRotationSensitivity, y * yRotationSensitivity, z * zRotationSensitivity));
         }
 
         #region Import Methods

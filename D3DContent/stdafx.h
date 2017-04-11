@@ -16,7 +16,7 @@
 
 #include <assert.h>
 
-#include "RendererManager.h"
+#include "DeviceManager.h"
 #include "Renderer.h"
 #include "TriangleRenderer.h"
 #include "LineStripRender.h"

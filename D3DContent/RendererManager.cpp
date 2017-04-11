@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "RendererManager.h"
 
 
 //+-----------------------------------------------------------------------------
@@ -11,7 +10,6 @@
 //
 //------------------------------------------------------------------------------
 
-#include "StdAfx.h"
 
 const static TCHAR szAppName[] = TEXT("HostedRenderer");
 typedef HRESULT(WINAPI *DIRECT3DCREATE9EXFUNCTION)(UINT SDKVersion, IDirect3D9Ex**);

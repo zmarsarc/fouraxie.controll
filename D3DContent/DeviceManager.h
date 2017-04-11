@@ -18,9 +18,7 @@ public:
 	void SetAdapter(POINT screenSpacePoint);
 
 	HRESULT GetCurrentRenderer(CRenderer** pRenderer);
-
 	HRESULT GetBackBufferNoRef(IDirect3DSurface9 **ppSurface);
-
 	HRESULT Render();
 
 private:

@@ -258,6 +258,8 @@ namespace GroundController {
 
             float xPos = (float)(pos.X - lastPos.X);
             float yPos = (float)(pos.Y - lastPos.Y);
+            lastPos = pos;
+
             if (e.LeftButton == MouseButtonState.Pressed) {
                 camera.Move(xPos * 0.03f, yPos * 0.03f, 0.0f);
             }
@@ -267,8 +269,6 @@ namespace GroundController {
             else {
                 return;
             }
-
-            lastPos = pos;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
@@ -291,16 +291,6 @@ namespace GroundController {
     }
 
     public class CameraController {
-
-        private float lastX;
-        private float lastY;
-        private float lastZ;
-
-        public void SetLastPosition(float x, float y, float z) {
-            lastX = x;
-            lastY = y;
-            lastZ = z;
-        }
 
         public void MoveTo(float x, float y, float z) {
             HRESULT.Check(CameraMoveTo(x, y, z));

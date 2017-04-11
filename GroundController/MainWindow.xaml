@@ -5,8 +5,6 @@
         Title="MainWindow" Height="350" Width="525">
     <Grid>
         <Image x:Name="imgelt" 
-               Mouse.MouseDown="imgelt_MouseDown"
-               Mouse.MouseUp="imgelt_MouseUp"
                Mouse.MouseMove="imgelt_MouseMove"
                Mouse.MouseWheel="imgelt_MouseWheel">
             <Image.Source>

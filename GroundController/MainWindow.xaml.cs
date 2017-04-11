@@ -245,6 +245,81 @@ namespace GroundController {
         [DllImport("D3DContent.dll")]
         static extern void Destroy();
 
+        #endregion
+
+        #region Camera control
+
+        private Point lastPos;
+        private CameraController camera = new CameraController();
+
+        private void imgelt_MouseMove(object sender, MouseEventArgs e) {
+
+            var pos = e.GetPosition(this);
+
+            float xPos = (float)(pos.X - lastPos.X);
+            float yPos = (float)(pos.Y - lastPos.Y);
+            if (e.LeftButton == MouseButtonState.Pressed) {
+                camera.Move(xPos * 0.03f, yPos * 0.03f, 0.0f);
+            }
+            else if (e.RightButton == MouseButtonState.Pressed) {
+                camera.Rotate(-yPos * 0.01f, -xPos * 0.01f, 0f);
+            }
+            else {
+                return;
+            }
+
+            lastPos = pos;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
+            camera.MoveTo(0.0f, 0.0f, -5.0f);
+            camera.LookAt(0.0f, 0.0f, 0.0f);
+        }
+
+        private void imgelt_MouseWheel(object sender, MouseWheelEventArgs e) {
+            camera.Move(0.0f, 0.0f, e.Delta * 0.005f);
+        }
+
+        #endregion
+    }
+
+    public static class HRESULT {
+        [SecurityPermissionAttribute(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        public static void Check(int hr) {
+            Marshal.ThrowExceptionForHR(hr);
+        }
+    }
+
+    public class CameraController {
+
+        private float lastX;
+        private float lastY;
+        private float lastZ;
+
+        public void SetLastPosition(float x, float y, float z) {
+            lastX = x;
+            lastY = y;
+            lastZ = z;
+        }
+
+        public void MoveTo(float x, float y, float z) {
+            HRESULT.Check(CameraMoveTo(x, y, z));
+        }
+
+        public void Move(float x, float y, float z) {
+            HRESULT.Check(CameraMove(x, y, z));
+        }
+
+        public void LookAt(float x, float y, float z) {
+            HRESULT.Check(CameraLookAt(x, y, z));
+        }
+
+        public void Rotate(float x, float y, float z) {
+            HRESULT.Check(CameraRotate(x, y, z));
+        }
+
+        #region Import Methods
+
         [DllImport("D3DContent.dll")]
         static extern int CameraMoveTo(float x, float y, float z);
 
@@ -259,63 +334,5 @@ namespace GroundController {
 
         #endregion
 
-        #region Event handlers
-
-        private bool isMouseLeftDown = false;
-        private bool isMouseRightDown = false;
-
-        private void imgelt_MouseDown(object sender, MouseButtonEventArgs e) {
-            isMouseLeftDown = (e.LeftButton == MouseButtonState.Pressed);
-            isMouseRightDown = (e.RightButton == MouseButtonState.Pressed);
-        }
-
-        private void imgelt_MouseUp(object sender, MouseButtonEventArgs e) {
-            isMouseLeftDown = (e.LeftButton == MouseButtonState.Pressed);
-            isMouseRightDown = (e.RightButton == MouseButtonState.Pressed);
-        }
-
-        #endregion
-
-        #region Camera control
-
-        private Point lastPos;
-
-        private void imgelt_MouseMove(object sender, MouseEventArgs e) {
-
-            var pos = e.GetPosition(this);
-
-            float xPos = (float)(pos.X - lastPos.X);
-            float yPos = (float)(pos.Y - lastPos.Y);
-
-            if (isMouseLeftDown) {
-                HRESULT.Check(CameraMove(xPos * 0.03f, yPos * 0.03f, 0.0f));
-            }
-            else if (isMouseRightDown) {
-                HRESULT.Check(CameraRotate(-yPos * 0.01f, -xPos * 0.01f, 0f));
-            }
-            else {
-                return;
-            }
-
-            lastPos = pos;
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e) {
-            HRESULT.Check(CameraMoveTo(0.0f, 0.0f, -5.0f));
-            HRESULT.Check(CameraLookAt(0.0f, 0.0f, 0.0f));
-        }
-
-        private void imgelt_MouseWheel(object sender, MouseWheelEventArgs e) {
-            HRESULT.Check(CameraMove(0.0f, 0.0f, e.Delta *  0.005f));
-        }
-
-        #endregion
-    }
-
-    public static class HRESULT {
-        [SecurityPermissionAttribute(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        public static void Check(int hr) {
-            Marshal.ThrowExceptionForHR(hr);
-        }
     }
 }

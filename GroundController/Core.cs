@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace GroundController {
 
@@ -258,6 +259,13 @@ namespace GroundController {
                 binaryFile.BaseStream.Seek(faceList + 6, SeekOrigin.Begin);
                 List<Face> faces = ReadFaces(binaryFile);
 
+                // create triangle geometry objects
+                List<TriangleGeometry> triangles = new List<TriangleGeometry>();
+                foreach (Face f in faces) {
+                    triangles.Add(new TriangleGeometry(
+                        vertexs[(int)f.first], vertexs[(int)f.second], vertexs[(int)f.third]));
+                }
+
                 D3DObject obj = new D3DObject(vertexs, faces);
                 objs.Add(obj);
 
@@ -275,4 +283,36 @@ namespace GroundController {
         }
 
     }
+
+    // Triangle Geometry object which contain three vertex's position
+    public class TriangleGeometry : Drawable {
+
+        private Vertex firstVertex;
+        private Vertex secondVertex;
+        private Vertex thirdVertex;
+
+        public TriangleGeometry(Vertex first, Vertex second, Vertex third) {
+            firstVertex = first;
+            secondVertex = second;
+            thirdVertex = third;
+        }
+
+        public void Draw() {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class FormatModel {
+
+        List<D3DObject> objects;
+
+        public FormatModel(List<D3DObject> obj) {
+            objects = obj;
+        }
+    }
+
+    public interface Drawable {
+        void Draw();
+    }
+
 }

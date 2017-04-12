@@ -7,8 +7,7 @@ class CRenderer;
 class DeviceManager
 {
 public:
-	static HRESULT Create(DeviceManager **ppManager);
-	~DeviceManager();
+	static DeviceManager& GetManager();
 
 	HRESULT EnsureDevices();
 
@@ -23,6 +22,9 @@ public:
 
 private:
 	DeviceManager();
+	DeviceManager(DeviceManager const&);
+	DeviceManager& operator = (DeviceManager const&);
+	~DeviceManager();
 
 	void CleanupInvalidDevices();
 	HRESULT EnsureRenderers();

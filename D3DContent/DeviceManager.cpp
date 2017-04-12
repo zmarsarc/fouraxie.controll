@@ -37,12 +37,6 @@ DeviceManager::DeviceManager()
 
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager dtor
-//
-//------------------------------------------------------------------------------
 DeviceManager::~DeviceManager()
 {
 	DestroyResources();
@@ -54,26 +48,11 @@ DeviceManager::~DeviceManager()
 	}
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::Create
-//
-//  Synopsis:
-//      Creates the manager
-//
-//------------------------------------------------------------------------------
-HRESULT
-DeviceManager::Create(DeviceManager **ppManager)
-{
-	HRESULT hr = S_OK;
-
-	*ppManager = new DeviceManager();
-	IFCOOM(*ppManager);
-
-Cleanup:
-	return hr;
+DeviceManager& DeviceManager::GetManager() {
+	static DeviceManager deviceManager;
+	return deviceManager;
 }
+
 
 //+-----------------------------------------------------------------------------
 //
@@ -372,17 +351,7 @@ Cleanup:
 	return hr;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::DestroyResources
-//
-//  Synopsis:
-//      Delete all D3D resources
-//
-//------------------------------------------------------------------------------
-void
-DeviceManager::DestroyResources()
+void DeviceManager::DestroyResources()
 {
 	SAFE_RELEASE(m_pD3D);
 	SAFE_RELEASE(m_pD3DEx);

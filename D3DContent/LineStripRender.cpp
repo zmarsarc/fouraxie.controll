@@ -180,7 +180,13 @@ HRESULT CLineStripRender::Render()
 	D3DXMATRIXA16 matWorld;
 
 	auto countPoint = vertex.size();
-	IFC(SetupBuffer());
+	static bool isInit = false;
+	// just run once
+	if (!isInit) {
+		IFC(SetupBuffer());
+		isInit = true;
+	}
+	vertex.clear();
 
 	IFC(m_pd3dDevice->BeginScene());
 	IFC(m_pd3dDevice->Clear(

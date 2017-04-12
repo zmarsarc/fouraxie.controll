@@ -98,6 +98,18 @@ Cleanup:
 	return hr;
 }
 
+D3DPRESENT_PARAMETERS* SetupPrensentParamenters()
+{
+	D3DPRESENT_PARAMETERS* ret = new D3DPRESENT_PARAMETERS;
+	ZeroMemory(ret, sizeof(D3DPRESENT_PARAMETERS));
+	ret->Windowed = true;
+	ret->BackBufferFormat = D3DFORMAT::D3DFMT_UNKNOWN;
+	ret->BackBufferHeight = 1;
+	ret->BackBufferWidth = 1;
+	ret->SwapEffect = D3DSWAPEFFECT::D3DSWAPEFFECT_DISCARD;
+	return ret;
+}
+
 //+-----------------------------------------------------------------------------
 //
 //  Member:
@@ -112,13 +124,7 @@ CRenderer::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter
 {
 	HRESULT hr = S_OK;
 
-	D3DPRESENT_PARAMETERS d3dpp;
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
-	d3dpp.Windowed = TRUE;
-	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-	d3dpp.BackBufferHeight = 1;
-	d3dpp.BackBufferWidth = 1;
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	D3DPRESENT_PARAMETERS* pd3dpp = SetupPrensentParamenters();
 
 	D3DCAPS9 caps;
 	DWORD dwVertexProcessing;
@@ -140,7 +146,7 @@ CRenderer::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter
 			D3DDEVTYPE_HAL,
 			hwnd,
 			dwVertexProcessing | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
-			&d3dpp,
+			pd3dpp,
 			NULL,
 			&m_pd3dDeviceEx
 		));
@@ -156,11 +162,12 @@ CRenderer::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter
 			D3DDEVTYPE_HAL,
 			hwnd,
 			dwVertexProcessing | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
-			&d3dpp,
+			pd3dpp,
 			&m_pd3dDevice
 		));
 	}
 
 Cleanup:
+	delete pd3dpp;
 	return hr;
 }

@@ -14,6 +14,8 @@ public:
 	void SetAlpha(bool fUseAlpha);
 	void SetNumDesiredSamples(UINT uNumSamples);
 	void SetAdapter(POINT screenSpacePoint);
+	IDirect3DDevice9Ex& GetDeviceEx();
+
 
 	HRESULT GetCurrentRenderer(CRenderer** pRenderer);
 	HRESULT GetBackBufferNoRef(IDirect3DSurface9 **ppSurface);
@@ -48,5 +50,5 @@ private:
 	bool m_fUseAlpha;
 	bool m_fSurfaceSettingsChanged;
 
-	IDirect3DDevice9Ex* device;
+	IDirect3DDevice9Ex* deviceEx;
 };

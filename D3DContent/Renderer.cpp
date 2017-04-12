@@ -1,19 +1,4 @@
 #include "stdafx.h"
-#include "Renderer.h"
-
-
-//+-----------------------------------------------------------------------------
-//
-//  CRenderer
-//
-//      An abstract base class that creates a device and a target render 
-//      surface. Derive from this class and override Init() and Render() 
-//      to do your own rendering. See CTriangleRenderer for an example.
-
-
-//------------------------------------------------------------------------------
-
-#include "StdAfx.h"
 
 //+-----------------------------------------------------------------------------
 //
@@ -21,8 +6,9 @@
 //      CRenderer ctor
 //
 //------------------------------------------------------------------------------
-CRenderer::CRenderer() : m_pd3dDevice(NULL), m_pd3dDeviceEx(NULL), m_pd3dRTS(NULL)
+CRenderer::CRenderer() : m_pd3dDevice(NULL), m_pd3dRTS(NULL)
 {
+	m_pd3dDeviceEx = &DeviceManager::GetManager().GetDeviceEx();
 }
 
 //+-----------------------------------------------------------------------------

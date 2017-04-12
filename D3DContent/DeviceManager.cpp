@@ -396,7 +396,7 @@ void DeviceManager::InitDevice() {
 		dwVertexProcessing | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
 		d3dpp,
 		NULL,
-		&device
+		&deviceEx
 	);
 
 	delete d3dpp;
@@ -493,6 +493,10 @@ DeviceManager::SetAdapter(POINT screenSpacePoint)
 			}
 		}
 	}
+}
+
+IDirect3DDevice9Ex& DeviceManager::GetDeviceEx() {
+	return *deviceEx;
 }
 
 HRESULT DeviceManager::GetCurrentRenderer(CRenderer** pRenderer) {

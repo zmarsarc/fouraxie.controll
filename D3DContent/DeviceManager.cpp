@@ -1,49 +1,33 @@
 #include "stdafx.h"
 
-
-//+-----------------------------------------------------------------------------
-//
-//  CRendererManager
-//
-//      Manages the list of CRenderers. Managed code pinvokes into this class
-//      and this class forwards to the appropriate CRenderer.
-//
-//------------------------------------------------------------------------------
-
-
 const static TCHAR szAppName[] = TEXT("HostedRenderer");
 typedef HRESULT(WINAPI *DIRECT3DCREATE9EXFUNCTION)(UINT SDKVersion, IDirect3D9Ex**);
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager ctor
-//
-//------------------------------------------------------------------------------
 DeviceManager::DeviceManager()
 	:
-	m_pD3D(NULL),
-	m_pD3DEx(NULL),
+	d3d(NULL),
+	d3dEx(NULL),
 	m_cAdapters(0),
-	m_hwnd(NULL),
+	hWnd(NULL),
 	m_pCurrentRenderer(NULL),
 	m_rgRenderers(NULL),
 	m_uWidth(1024),
 	m_uHeight(1024),
 	m_uNumSamples(0),
 	m_fUseAlpha(false),
-	m_fSurfaceSettingsChanged(true)
+	m_fSurfaceSettingsChanged(true),
+	deviceEx(NULL)
 {
-
+	
 }
 
 DeviceManager::~DeviceManager()
 {
 	DestroyResources();
 
-	if (m_hwnd)
+	if (hWnd)
 	{
-		DestroyWindow(m_hwnd);
+		DestroyWindow(hWnd);
 		UnregisterClass(szAppName, NULL);
 	}
 }
@@ -53,28 +37,18 @@ DeviceManager& DeviceManager::GetManager() {
 	return deviceManager;
 }
 
-
 void DeviceManager::Release() {
 	this->~DeviceManager();
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::EnsureRenderers
-//
-//  Synopsis:
-//      Makes sure the CRenderer objects exist
-//
-//------------------------------------------------------------------------------
-HRESULT
-DeviceManager::EnsureRenderers()
-{
+// Renderer's creation should controlled by Renderer itself
+// This method will moved into Renderer later
+HRESULT DeviceManager::EnsureRenderers() {
 	HRESULT hr = S_OK;
 
 	if (!m_rgRenderers)
 	{
-		IFC(EnsureHWND());
+		IFC(CreateHWND());
 
 		assert(m_cAdapters);
 		m_rgRenderers = new CRenderer*[m_cAdapters];
@@ -83,7 +57,7 @@ DeviceManager::EnsureRenderers()
 
 		for (UINT i = 0; i < m_cAdapters; ++i)
 		{
-			IFC(CLineStripRender::Create(m_pD3D, m_pD3DEx, m_hwnd, i, &m_rgRenderers[i]));
+			IFC(CLineStripRender::Create(d3d, d3dEx, hWnd, i, &m_rgRenderers[i]));
 		}
 
 		// Default to the default adapter 
@@ -94,21 +68,11 @@ Cleanup:
 	return hr;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::EnsureHWND
-//
-//  Synopsis:
-//      Makes sure an HWND exists if we need it
-//
-//------------------------------------------------------------------------------
-HRESULT
-DeviceManager::EnsureHWND()
-{
+HRESULT DeviceManager::CreateHWND() {
+
 	HRESULT hr = S_OK;
 
-	if (!m_hwnd)
+	if (!hWnd)
 	{
 		WNDCLASS wndclass;
 
@@ -128,7 +92,7 @@ DeviceManager::EnsureHWND()
 			IFC(E_FAIL);
 		}
 
-		m_hwnd = CreateWindow(szAppName,
+		hWnd = CreateWindow(szAppName,
 			TEXT("D3DImageSample"),
 			WS_OVERLAPPEDWINDOW,
 			0,                   // Initial X
@@ -145,40 +109,29 @@ Cleanup:
 	return hr;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::EnsureD3DObjects
-//
-//  Synopsis:
-//      Makes sure the D3D objects exist
-//
-//------------------------------------------------------------------------------
-HRESULT
-DeviceManager::EnsureD3DObjects()
-{
-	HRESULT hr = S_OK;
+HRESULT DeviceManager::EnsureD3DObjects() {
 
-	HMODULE hD3D = NULL;
-	if (!m_pD3D)
+	HRESULT hr = S_OK;
+	HMODULE hD3D = LoadLibrary(TEXT("d3d9.dll"));
+
+	if (!d3d)
 	{
-		hD3D = LoadLibrary(TEXT("d3d9.dll"));
 		DIRECT3DCREATE9EXFUNCTION pfnCreate9Ex = (DIRECT3DCREATE9EXFUNCTION)GetProcAddress(hD3D, "Direct3DCreate9Ex");
 		if (pfnCreate9Ex)
 		{
-			IFC((*pfnCreate9Ex)(D3D_SDK_VERSION, &m_pD3DEx));
-			IFC(m_pD3DEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void **>(&m_pD3D)));
+			IFC((*pfnCreate9Ex)(D3D_SDK_VERSION, &d3dEx));
+			IFC(d3dEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void **>(&d3d)));
 		}
 		else
 		{
-			m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-			if (!m_pD3D)
+			d3d = Direct3DCreate9(D3D_SDK_VERSION);
+			if (!d3d)
 			{
 				IFC(E_FAIL);
 			}
 		}
 
-		m_cAdapters = m_pD3D->GetAdapterCount();
+		m_cAdapters = d3d->GetAdapterCount();
 	}
 
 Cleanup:
@@ -190,22 +143,7 @@ Cleanup:
 	return hr;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::CleanupInvalidDevices
-//
-//  Synopsis:
-//      Checks to see if any devices are bad and if so, deletes all resources
-//
-//      We could delete resources and wait for D3DERR_DEVICENOTRESET and reset
-//      the devices, but if the device is lost because of an adapter order 
-//      change then our existing D3D objects would have stale adapter 
-//      information. We'll delete everything to be safe rather than sorry.
-//
-//------------------------------------------------------------------------------
-void
-DeviceManager::CleanupInvalidDevices()
+void DeviceManager::CleanupInvalidDevices()
 {
 	for (UINT i = 0; i < m_cAdapters; ++i)
 	{
@@ -217,19 +155,7 @@ DeviceManager::CleanupInvalidDevices()
 	}
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::GetBackBufferNoRef
-//
-//  Synopsis:
-//      Returns the surface of the current renderer without adding a reference
-//
-//      This can return NULL if we're in a bad device state.
-//
-//------------------------------------------------------------------------------
-HRESULT
-DeviceManager::GetBackBufferNoRef(IDirect3DSurface9 **ppSurface)
+HRESULT DeviceManager::GetBackBufferNoRef(IDirect3DSurface9 **ppSurface)
 {
 	HRESULT hr = S_OK;
 
@@ -238,6 +164,8 @@ DeviceManager::GetBackBufferNoRef(IDirect3DSurface9 **ppSurface)
 
 	CleanupInvalidDevices();
 
+	// *** still we keep EnsureD3DObjects here
+	// because GetBackBufferNoRef may called before DeviceManager init
 	IFC(EnsureD3DObjects());
 
 	//
@@ -282,18 +210,7 @@ Cleanup:
 	return hr;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::TestSurfaceSettings
-//
-//  Synopsis:
-//      Checks to see if our current surface settings are allowed on all
-//      adapters.
-//
-//------------------------------------------------------------------------------
-HRESULT
-DeviceManager::TestSurfaceSettings()
+HRESULT DeviceManager::TestSurfaceSettings()
 {
 	HRESULT hr = S_OK;
 
@@ -309,7 +226,7 @@ DeviceManager::TestSurfaceSettings()
 	for (UINT i = 0; i < m_cAdapters; ++i)
 	{
 		// Can we get HW rendering?
-		IFC(m_pD3D->CheckDeviceType(
+		IFC(d3d->CheckDeviceType(
 			i,
 			D3DDEVTYPE_HAL,
 			D3DFMT_X8R8G8B8,
@@ -318,7 +235,7 @@ DeviceManager::TestSurfaceSettings()
 		));
 
 		// Is the format okay?
-		IFC(m_pD3D->CheckDeviceFormat(
+		IFC(d3d->CheckDeviceFormat(
 			i,
 			D3DDEVTYPE_HAL,
 			D3DFMT_X8R8G8B8,
@@ -329,11 +246,11 @@ DeviceManager::TestSurfaceSettings()
 
 		// D3DImage only allows multisampling on 9Ex devices. If we can't 
 		// multisample, overwrite the desired number of samples with 0.
-		if (m_pD3DEx && m_uNumSamples > 1)
+		if (d3dEx && m_uNumSamples > 1)
 		{
 			assert(m_uNumSamples <= 16);
 
-			if (FAILED(m_pD3D->CheckDeviceMultiSampleType(
+			if (FAILED(d3d->CheckDeviceMultiSampleType(
 				i,
 				D3DDEVTYPE_HAL,
 				fmt,
@@ -357,8 +274,8 @@ Cleanup:
 
 void DeviceManager::DestroyResources()
 {
-	SAFE_RELEASE(m_pD3D);
-	SAFE_RELEASE(m_pD3DEx);
+	SAFE_RELEASE(d3d);
+	SAFE_RELEASE(d3dEx);
 
 	for (UINT i = 0; i < m_cAdapters; ++i)
 	{
@@ -389,10 +306,10 @@ void DeviceManager::InitDevice() {
 	D3DPRESENT_PARAMETERS* d3dpp = SetupPrensentParamenters();	
 	DWORD dwVertexProcessing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
-	m_pD3DEx->CreateDeviceEx(
+	d3dEx->CreateDeviceEx(
 		D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
-		m_hwnd,
+		hWnd,
 		dwVertexProcessing | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
 		d3dpp,
 		NULL,
@@ -402,17 +319,7 @@ void DeviceManager::InitDevice() {
 	delete d3dpp;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::SetSize
-//
-//  Synopsis:
-//      Update the size of the surface. Next render will create a new surface.
-//
-//------------------------------------------------------------------------------
-void
-DeviceManager::SetSize(UINT uWidth, UINT uHeight)
+void DeviceManager::SetSize(UINT uWidth, UINT uHeight)
 {
 	if (uWidth != m_uWidth || uHeight != m_uHeight)
 	{
@@ -422,17 +329,7 @@ DeviceManager::SetSize(UINT uWidth, UINT uHeight)
 	}
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::SetAlpha
-//
-//  Synopsis:
-//      Update the format of the surface. Next render will create a new surface.
-//
-//------------------------------------------------------------------------------
-void
-DeviceManager::SetAlpha(bool fUseAlpha)
+void DeviceManager::SetAlpha(bool fUseAlpha)
 {
 	if (fUseAlpha != m_fUseAlpha)
 	{
@@ -441,18 +338,7 @@ DeviceManager::SetAlpha(bool fUseAlpha)
 	}
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::SetNumDesiredSamples
-//
-//  Synopsis:
-//      Update the MSAA settings of the surface. Next render will create a 
-//      new surface.
-//
-//------------------------------------------------------------------------------
-void
-DeviceManager::SetNumDesiredSamples(UINT uNumSamples)
+void DeviceManager::SetNumDesiredSamples(UINT uNumSamples)
 {
 	if (m_uNumSamples != uNumSamples)
 	{
@@ -461,17 +347,7 @@ DeviceManager::SetNumDesiredSamples(UINT uNumSamples)
 	}
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::SetAdapter
-//
-//  Synopsis:
-//      Update the current renderer. Next render will use the new renderer.
-//
-//------------------------------------------------------------------------------
-void
-DeviceManager::SetAdapter(POINT screenSpacePoint)
+void DeviceManager::SetAdapter(POINT screenSpacePoint)
 {
 	CleanupInvalidDevices();
 
@@ -480,13 +356,13 @@ DeviceManager::SetAdapter(POINT screenSpacePoint)
 	// recreate them here, ignore the adapter update and wait for render to recreate.
 	//
 
-	if (m_pD3D && m_rgRenderers)
+	if (d3d && m_rgRenderers)
 	{
 		HMONITOR hMon = MonitorFromPoint(screenSpacePoint, MONITOR_DEFAULTTONULL);
 
 		for (UINT i = 0; i < m_cAdapters; ++i)
 		{
-			if (hMon == m_pD3D->GetAdapterMonitor(i))
+			if (hMon == d3d->GetAdapterMonitor(i))
 			{
 				m_pCurrentRenderer = m_rgRenderers[i];
 				break;
@@ -495,7 +371,8 @@ DeviceManager::SetAdapter(POINT screenSpacePoint)
 	}
 }
 
-IDirect3DDevice9Ex& DeviceManager::GetDeviceEx() {
+IDirect3DDevice9Ex& DeviceManager::GetDeviceEx()
+{
 	return *deviceEx;
 }
 
@@ -512,17 +389,7 @@ HRESULT DeviceManager::GetCurrentRenderer(CRenderer** pRenderer) {
 	return hr;
 }
 
-//+-----------------------------------------------------------------------------
-//
-//  Member:
-//      CRendererManager::Render
-//
-//  Synopsis:
-//      Forward to the current renderer
-//
-//------------------------------------------------------------------------------
-HRESULT
-DeviceManager::Render()
+HRESULT DeviceManager::Render()
 {
 	return m_pCurrentRenderer ? m_pCurrentRenderer->Render() : S_OK;
 }

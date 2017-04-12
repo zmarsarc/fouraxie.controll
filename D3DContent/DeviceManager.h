@@ -29,20 +29,20 @@ private:
 
 	void CleanupInvalidDevices();
 	HRESULT EnsureRenderers();
-	HRESULT EnsureHWND();
+	HRESULT CreateHWND();
 	HRESULT EnsureD3DObjects();
 	HRESULT TestSurfaceSettings();
 	void DestroyResources();
 	void InitDevice();
 
-	IDirect3D9    *m_pD3D;
-	IDirect3D9Ex  *m_pD3DEx;
+	IDirect3D9    *d3d;
+	IDirect3D9Ex  *d3dEx;
 
 	UINT m_cAdapters;
 	CRenderer **m_rgRenderers;
 	CRenderer *m_pCurrentRenderer;
 
-	HWND m_hwnd;
+	HWND hWnd;
 
 	UINT m_uWidth;
 	UINT m_uHeight;

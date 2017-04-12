@@ -25,6 +25,8 @@ protected:
 
 	virtual HRESULT Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter);
 
+	HRESULT CreateDeviceEx(IDirect3D9Ex* d3dEx, UINT adapter, HWND hWnd, DWORD vertexProcess, D3DPRESENT_PARAMETERS* pp);
+	HRESULT CreateDevice(IDirect3D9* d3d, UINT adapter, HWND hWnd, DWORD vertexProcess, D3DPRESENT_PARAMETERS* pp);
 	IDirect3DDevice9   *m_pd3dDevice;
 	IDirect3DDevice9Ex *m_pd3dDeviceEx;
 

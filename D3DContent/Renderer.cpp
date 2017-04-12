@@ -6,9 +6,8 @@
 //      CRenderer ctor
 //
 //------------------------------------------------------------------------------
-CRenderer::CRenderer() : m_pd3dDevice(NULL), m_pd3dRTS(NULL)
+CRenderer::CRenderer() : m_pd3dDevice(NULL), m_pd3dRTS(NULL), m_pd3dDeviceEx(NULL)
 {
-	m_pd3dDeviceEx = &DeviceManager::GetManager().GetDeviceEx();
 }
 
 //+-----------------------------------------------------------------------------
@@ -125,36 +124,53 @@ CRenderer::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter
 	IFC(pD3D->GetDeviceCaps(uAdapter, D3DDEVTYPE_HAL, &caps));
 	DWORD dwVertexProcessing = DetectHardwareCapabilities(caps);
 
-	if (pD3DEx)
-	{
-		IDirect3DDevice9Ex *pd3dDevice = NULL;
-		IFC(pD3DEx->CreateDeviceEx(
-			uAdapter,
-			D3DDEVTYPE_HAL,
-			hwnd,
-			dwVertexProcessing | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
-			pd3dpp,
-			NULL,
-			&m_pd3dDeviceEx
-		));
-
-		IFC(m_pd3dDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pd3dDevice)));
+	if (pD3DEx) {
+		CreateDeviceEx(pD3DEx, uAdapter, hwnd, dwVertexProcessing, pd3dpp);
+		//m_pd3dDeviceEx = (DeviceManager::GetManager()).GetDeviceEx();
 	}
-	else
-	{
-		assert(pD3D);
-
-		IFC(pD3D->CreateDevice(
-			uAdapter,
-			D3DDEVTYPE_HAL,
-			hwnd,
-			dwVertexProcessing | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
-			pd3dpp,
-			&m_pd3dDevice
-		));
+	else {
+		CreateDevice(pD3D, uAdapter, hwnd, dwVertexProcessing, pd3dpp);
 	}
 
 Cleanup:
 	delete pd3dpp;
+	return hr;
+}
+
+HRESULT CRenderer::CreateDeviceEx(IDirect3D9Ex* d3dEx, UINT adapter, HWND hWnd, DWORD vertexProcess, D3DPRESENT_PARAMETERS* pp) {
+
+	HRESULT hr = S_OK;
+
+	IFC(d3dEx->CreateDeviceEx(
+		adapter,
+		D3DDEVTYPE_HAL,
+		hWnd,
+		vertexProcess | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
+		pp,
+		NULL,
+		&m_pd3dDeviceEx
+	));
+
+	IFC(m_pd3dDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pd3dDevice)));
+
+Cleanup:
+	return hr;
+}
+
+HRESULT CRenderer::CreateDevice(IDirect3D9* d3d, UINT adapter, HWND hWnd, DWORD vertexProcess, D3DPRESENT_PARAMETERS* pp) {
+	HRESULT hr = S_OK;
+
+	assert(d3d);
+
+	IFC(d3d->CreateDevice(
+		adapter,
+		D3DDEVTYPE_HAL,
+		hWnd,
+		vertexProcess | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
+		pp,
+		&m_pd3dDevice
+	));
+
+Cleanup:
 	return hr;
 }

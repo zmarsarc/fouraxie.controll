@@ -54,6 +54,10 @@ DeviceManager& DeviceManager::GetManager() {
 }
 
 
+void DeviceManager::Release() {
+	this->~DeviceManager();
+}
+
 //+-----------------------------------------------------------------------------
 //
 //  Member:

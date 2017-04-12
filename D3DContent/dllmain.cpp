@@ -84,6 +84,7 @@ extern "C" HRESULT WINAPI Render()
 
 extern "C" void WINAPI Destroy()
 {
+	deviceManager.Release();
 	return;
 }
 

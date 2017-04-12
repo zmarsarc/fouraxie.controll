@@ -8,6 +8,7 @@ class DeviceManager
 {
 public:
 	static DeviceManager& GetManager();
+	void Release();
 
 	HRESULT EnsureDevices();
 

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 const static TCHAR szAppName[] = TEXT("HostedRenderer");
-typedef HRESULT(WINAPI *DIRECT3DCREATE9EXFUNCTION)(UINT SDKVersion, IDirect3D9Ex**);
 
 DeviceManager::DeviceManager()
 	:
@@ -18,7 +17,6 @@ DeviceManager::DeviceManager()
 	m_fSurfaceSettingsChanged(true),
 	deviceEx(NULL)
 {
-	
 }
 
 DeviceManager::~DeviceManager()
@@ -109,37 +107,41 @@ Cleanup:
 	return hr;
 }
 
+DeviceManager::DIRECT3DCREATE9EXFUNCTION DeviceManager::GetExCreatorAddress() {
+	HMODULE hD3D = LoadLibrary(TEXT("d3d9.dll"));
+	DIRECT3DCREATE9EXFUNCTION pfnCreate9Ex = (DIRECT3DCREATE9EXFUNCTION)GetProcAddress(hD3D, "Direct3DCreate9Ex");
+	FreeLibrary(hD3D);
+	return pfnCreate9Ex;
+}
+
+HRESULT DeviceManager::CreateD3D9ExInstance(DIRECT3DCREATE9EXFUNCTION creator) {
+	HRESULT hr = S_OK;
+
+	IFC((*creator)(D3D_SDK_VERSION, &d3dEx));
+	IFC(d3dEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void **>(&d3d)));
+
+Cleanup:
+	return hr;
+}
+
 HRESULT DeviceManager::EnsureD3DObjects() {
 
 	HRESULT hr = S_OK;
-	HMODULE hD3D = LoadLibrary(TEXT("d3d9.dll"));
-
-	if (!d3d)
-	{
-		DIRECT3DCREATE9EXFUNCTION pfnCreate9Ex = (DIRECT3DCREATE9EXFUNCTION)GetProcAddress(hD3D, "Direct3DCreate9Ex");
-		if (pfnCreate9Ex)
-		{
-			IFC((*pfnCreate9Ex)(D3D_SDK_VERSION, &d3dEx));
-			IFC(d3dEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void **>(&d3d)));
+	if (!d3d) {
+		DIRECT3DCREATE9EXFUNCTION pfnCreate9Ex = GetExCreatorAddress();
+		if (pfnCreate9Ex) {
+			IFC(CreateD3D9ExInstance(pfnCreate9Ex));
 		}
-		else
-		{
+		else {
 			d3d = Direct3DCreate9(D3D_SDK_VERSION);
-			if (!d3d)
-			{
+			if (!d3d) {
 				IFC(E_FAIL);
 			}
 		}
-
 		m_cAdapters = d3d->GetAdapterCount();
 	}
 
 Cleanup:
-	if (hD3D)
-	{
-		FreeLibrary(hD3D);
-	}
-
 	return hr;
 }
 
@@ -392,4 +394,14 @@ HRESULT DeviceManager::GetCurrentRenderer(CRenderer** pRenderer) {
 HRESULT DeviceManager::Render()
 {
 	return m_pCurrentRenderer ? m_pCurrentRenderer->Render() : S_OK;
+}
+
+IDirect3D9* DeviceManager::GetD3D() {
+	EnsureD3DObjects();
+	return d3d;
+}
+
+IDirect3D9Ex* DeviceManager::GetD3DEx() {
+	EnsureD3DObjects();
+	return d3dEx;
 }

@@ -84,7 +84,7 @@ Cleanup:
 	return hr;
 }
 
-D3DPRESENT_PARAMETERS* SetupPrensentParamenters()
+static D3DPRESENT_PARAMETERS* SetupPrensentParamenters()
 {
 	D3DPRESENT_PARAMETERS* ret = new D3DPRESENT_PARAMETERS;
 	ZeroMemory(ret, sizeof(D3DPRESENT_PARAMETERS));
@@ -96,7 +96,7 @@ D3DPRESENT_PARAMETERS* SetupPrensentParamenters()
 	return ret;
 }
 
-DWORD DetectHardwareCapabilities(D3DCAPS9 caps) {
+static DWORD DetectHardwareCapabilities(D3DCAPS9 caps) {
 	if ((caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) == D3DDEVCAPS_HWTRANSFORMANDLIGHT) {
 		return D3DCREATE_HARDWARE_VERTEXPROCESSING;
 	}

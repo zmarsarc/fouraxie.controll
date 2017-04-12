@@ -10,8 +10,6 @@ public:
 	static DeviceManager& GetManager();
 	void Release();
 
-	HRESULT EnsureDevices();
-
 	void SetSize(UINT uWidth, UINT uHeight);
 	void SetAlpha(bool fUseAlpha);
 	void SetNumDesiredSamples(UINT uNumSamples);

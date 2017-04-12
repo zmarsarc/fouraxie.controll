@@ -19,44 +19,28 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 static DeviceManager& deviceManager = DeviceManager::GetManager();
 
-
 extern "C" HRESULT WINAPI SetSize(UINT uWidth, UINT uHeight)
 {
-	HRESULT hr = S_OK;
 	deviceManager.SetSize(uWidth, uHeight);
-
-Cleanup:
-	return hr;
+	return S_OK;
 }
 
 extern "C" HRESULT WINAPI SetAlpha(BOOL fUseAlpha)
 {
-	HRESULT hr = S_OK;
-
 	deviceManager.SetAlpha(!!fUseAlpha);
-
-Cleanup:
-	return hr;
+	return S_OK;
 }
 
 extern "C" HRESULT WINAPI SetNumDesiredSamples(UINT uNumSamples)
 {
-	HRESULT hr = S_OK;
-
 	deviceManager.SetNumDesiredSamples(uNumSamples);
-
-Cleanup:
-	return hr;
+	return S_OK;
 }
 
 extern "C" HRESULT WINAPI SetAdapter(POINT screenSpacePoint)
 {
-	HRESULT hr = S_OK;
-
 	deviceManager.SetAdapter(screenSpacePoint);
-
-Cleanup:
-	return hr;
+	return S_OK;
 }
 
 extern "C" HRESULT WINAPI GetBackBufferNoRef(IDirect3DSurface9 **ppSurface)

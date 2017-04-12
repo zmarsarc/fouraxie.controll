@@ -31,6 +31,7 @@ private:
 	HRESULT EnsureD3DObjects();
 	HRESULT TestSurfaceSettings();
 	void DestroyResources();
+	void InitDevice();
 
 	IDirect3D9    *m_pD3D;
 	IDirect3D9Ex  *m_pD3DEx;
@@ -46,4 +47,6 @@ private:
 	UINT m_uNumSamples;
 	bool m_fUseAlpha;
 	bool m_fSurfaceSettingsChanged;
+
+	IDirect3DDevice9Ex* device;
 };

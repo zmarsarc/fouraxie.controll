@@ -373,6 +373,35 @@ void DeviceManager::DestroyResources()
 	m_fSurfaceSettingsChanged = true;
 }
 
+static D3DPRESENT_PARAMETERS* SetupPrensentParamenters() {
+	D3DPRESENT_PARAMETERS* ret = new D3DPRESENT_PARAMETERS;
+	ZeroMemory(ret, sizeof(D3DPRESENT_PARAMETERS));
+	ret->Windowed = true;
+	ret->BackBufferFormat = D3DFORMAT::D3DFMT_UNKNOWN;
+	ret->BackBufferHeight = 1;
+	ret->BackBufferWidth = 1;
+	ret->SwapEffect = D3DSWAPEFFECT::D3DSWAPEFFECT_DISCARD;
+	return ret;
+}
+
+void DeviceManager::InitDevice() {
+
+	D3DPRESENT_PARAMETERS* d3dpp = SetupPrensentParamenters();	
+	DWORD dwVertexProcessing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
+
+	m_pD3DEx->CreateDeviceEx(
+		D3DADAPTER_DEFAULT,
+		D3DDEVTYPE_HAL,
+		m_hwnd,
+		dwVertexProcessing | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE,
+		d3dpp,
+		NULL,
+		&device
+	);
+
+	delete d3dpp;
+}
+
 //+-----------------------------------------------------------------------------
 //
 //  Member:

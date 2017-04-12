@@ -110,6 +110,15 @@ D3DPRESENT_PARAMETERS* SetupPrensentParamenters()
 	return ret;
 }
 
+DWORD DetectHardwareCapabilities(D3DCAPS9 caps) {
+	if ((caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) == D3DDEVCAPS_HWTRANSFORMANDLIGHT) {
+		return D3DCREATE_HARDWARE_VERTEXPROCESSING;
+	}
+	else {
+		return D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+	}
+}
+
 //+-----------------------------------------------------------------------------
 //
 //  Member:
@@ -127,16 +136,8 @@ CRenderer::Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter
 	D3DPRESENT_PARAMETERS* pd3dpp = SetupPrensentParamenters();
 
 	D3DCAPS9 caps;
-	DWORD dwVertexProcessing;
 	IFC(pD3D->GetDeviceCaps(uAdapter, D3DDEVTYPE_HAL, &caps));
-	if ((caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) == D3DDEVCAPS_HWTRANSFORMANDLIGHT)
-	{
-		dwVertexProcessing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
-	}
-	else
-	{
-		dwVertexProcessing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-	}
+	DWORD dwVertexProcessing = DetectHardwareCapabilities(caps);
 
 	if (pD3DEx)
 	{

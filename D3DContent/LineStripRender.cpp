@@ -73,15 +73,22 @@ HRESULT CLineStripRender::SetupBuffer()
 	UINT bufferSize = sizeof(CUSTOMVERTEX) * vertex.size();
 
 	IFC(m_pd3dDevice->CreateVertexBuffer(bufferSize, 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &m_pd3dVB, NULL));
-
-	void *pVertices;
-	IFC(m_pd3dVB->Lock(0, bufferSize, &pVertices, 0));
-	memcpy(pVertices, vertex.data(), bufferSize);
-	m_pd3dVB->Unlock();
-
+	IFC(FillBuffer(bufferSize, vertex.data()));
 	IFC(m_pd3dDevice->SetStreamSource(0, m_pd3dVB, 0, sizeof(CUSTOMVERTEX)));
 
 	vertex.clear();  // auto clear buffer
+
+Cleanup:
+	return hr;
+}
+
+HRESULT CLineStripRender::FillBuffer(UINT bufferSize, const void* src) {
+	HRESULT hr = S_OK;
+
+	void *pVertices;
+	IFC(m_pd3dVB->Lock(0, bufferSize, &pVertices, 0));
+	memcpy(pVertices, src, bufferSize);
+	m_pd3dVB->Unlock();
 
 Cleanup:
 	return hr;

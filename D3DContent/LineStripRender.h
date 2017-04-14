@@ -30,5 +30,6 @@ private:
 
 	CLineStripRender();
 	HRESULT SetupBuffer();
+	HRESULT FillBuffer(UINT bufferSize, const void* src);
 };
 

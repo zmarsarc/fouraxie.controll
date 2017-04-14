@@ -72,6 +72,11 @@ HRESULT CLineStripRender::SetupBuffer()
 
 	UINT bufferSize = sizeof(CUSTOMVERTEX) * vertex.size();
 
+	if (m_pd3dVB) {
+		m_pd3dVB->Release();
+		m_pd3dVB = nullptr;
+	}
+
 	IFC(m_pd3dDevice->CreateVertexBuffer(bufferSize, 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &m_pd3dVB, NULL));
 	IFC(FillBuffer(bufferSize, vertex.data()));
 	IFC(m_pd3dDevice->SetStreamSource(0, m_pd3dVB, 0, sizeof(CUSTOMVERTEX)));
@@ -181,6 +186,30 @@ Cleanup:
 	return hr;
 }
 
+HRESULT CLineStripRender::Draw(D3DXMATRIXA16* matWorld, size_t count) {
+	HRESULT hr = S_OK;
+
+	IFC(m_pd3dDevice->BeginScene());
+	IFC(m_pd3dDevice->Clear(
+		0,
+		NULL,
+		D3DCLEAR_TARGET,
+		D3DCOLOR_ARGB(0, 0, 0, 0),
+		1.0f,
+		0
+	));
+
+	D3DXMatrixTranslation(matWorld, 0.0f, 0.0f, 0.0f);
+	IFC(m_pd3dDevice->SetTransform(D3DTS_WORLD, matWorld));
+
+	IFC(m_pd3dDevice->DrawPrimitive(D3DPT_LINESTRIP, 0, count - 1));
+
+	IFC(m_pd3dDevice->EndScene());
+
+Cleanup:
+	return hr;
+}
+
 HRESULT CLineStripRender::Render()
 {
 	HRESULT hr = S_OK;
@@ -194,23 +223,9 @@ HRESULT CLineStripRender::Render()
 		isInit = true;
 	}
 	vertex.clear();
-
-	IFC(m_pd3dDevice->BeginScene());
-	IFC(m_pd3dDevice->Clear(
-		0,
-		NULL,
-		D3DCLEAR_TARGET,
-		D3DCOLOR_ARGB(0, 0, 0, 0),
-		1.0f,
-		0
-	));
-
 	D3DXMatrixTranslation(&matWorld, 0.0f, 0.0f, 0.0f);
-	IFC(m_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld));
 
-	IFC(m_pd3dDevice->DrawPrimitive(D3DPT_LINESTRIP, 0, countPoint - 1));
-
-	IFC(m_pd3dDevice->EndScene());
+	IFC(Draw(&matWorld, countPoint));
 
 Cleanup:
 	return hr;

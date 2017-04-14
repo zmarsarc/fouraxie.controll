@@ -16,6 +16,7 @@ public:
 	HRESULT CameraMove(D3DXVECTOR3 dir);
 	HRESULT CameraRotate(D3DXVECTOR3 rad);
 
+
 protected:
 	HRESULT Init(IDirect3D9 *pD3D, IDirect3D9Ex *pD3DEx, HWND hwnd, UINT uAdapter);
 
@@ -31,5 +32,6 @@ private:
 	CLineStripRender();
 	HRESULT SetupBuffer();
 	HRESULT FillBuffer(UINT bufferSize, const void* src);
+	HRESULT Draw(D3DXMATRIXA16* matWorld, size_t count);
 };
 

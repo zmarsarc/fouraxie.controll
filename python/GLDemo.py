@@ -53,11 +53,10 @@ class GLDemo(QtOpenGL.QGLWidget):
     def create_element_buffer(self):
         buffer = Buffer(self.context())
         buffer.create()
-        ebo = buffer.bufferID()
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffer.bufferID())
         GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, array('I', self.indeics).tostring(), GL.GL_STATIC_DRAW)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
-        return ebo
+        return buffer.bufferID()
 
     def create_and_int_array_attrib(self, vertex_buffer, element_buffer):
         vertex_arrays = GL.glGenVertexArrays(1)
@@ -74,11 +73,10 @@ class GLDemo(QtOpenGL.QGLWidget):
     def create_vertex_buffer(self):
         buffer = Buffer(self.context())
         buffer.create()
-        vertex_buffer = buffer.bufferID()
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vertex_buffer)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, buffer.bufferID())
         GL.glBufferData(GL.GL_ARRAY_BUFFER, array('f', self.vertices).tostring(), GL.GL_STATIC_DRAW)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        return vertex_buffer
+        return buffer.bufferID()
 
     def create_shader_program(self, fragment_shader, vertex_shader):
         program = GL.glCreateProgram()

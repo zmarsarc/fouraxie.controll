@@ -126,7 +126,7 @@ class Buffer(object):
         self.__isCreated = False
 
     def create(self, buffer_type):
-        self.assert_context()
+        self.__assert_context()
         try:
             self.__bufferID = GL.glGenBuffers(1)
             self.__type = buffer_type
@@ -135,11 +135,11 @@ class Buffer(object):
             raise RuntimeError("Unknown error")
 
     def bind(self):
-        self.assert_context()
+        self.__assert_context()
         GL.glBindBuffer(self.__select_buffer_target(), self.__bufferID)
 
     def unbind(self):
-        self.assert_context()
+        self.__assert_context()
         GL.glBindBuffer(self.__select_buffer_target(), 0)
 
     def __select_buffer_target(self):
@@ -148,7 +148,7 @@ class Buffer(object):
         if self.__type == QtOpenGL.QGLBuffer.IndexBuffer:
             return GL.GL_ELEMENT_ARRAY_BUFFER
 
-    def assert_context(self):
+    def __assert_context(self):
         if not self.__context.isValid():
             raise RuntimeError("Context not valid")
 

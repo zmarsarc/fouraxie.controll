@@ -31,7 +31,7 @@ class GLDemo(QtOpenGL.QGLWidget):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
         self.timer.setInterval(10)
-        # self.timer.start()
+        self.timer.start()
 
     def initializeGL(self):
         self.setup_render_pipeline()
@@ -99,10 +99,19 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glViewport(0, 0, width, height)
 
     def paintGL(self):
+
+        mat = [
+            math.cos(time.time() % math.pi), -math.sin(time.time() % math.pi), 0.0, 0.0,
+            math.sin(time.time() % math.pi), math.cos(time.time() % math.pi), 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ]
+
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glUseProgram(self.program)
         GL.glBindVertexArray(self.vertex_arrays)
-        GL.glUniform4f(self.color, math.cos(time.time() % math.pi), math.sin(time.time() % math.pi), math.tan(time.time() % math.pi), 1.0)
+        GL.glUniformMatrix4fv(
+            GL.glGetUniformLocation(self.program, 'transform'), 1, GL.GL_FALSE, array('f', mat).tostring())
         GL.glDrawElements(GL.GL_TRIANGLES, 6, GL.GL_UNSIGNED_INT, c_void_p(0))
         GL.glBindVertexArray(0)
 

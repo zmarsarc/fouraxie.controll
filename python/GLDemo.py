@@ -85,14 +85,14 @@ class GLDemo(QtOpenGL.QGLWidget):
 
     def create_fragment_shader(self):
         shader = GL.glCreateShader(GL.GL_FRAGMENT_SHADER)
-        with open('fragment_shader.gls') as shader_source:
+        with open('python/fragment_shader.gls') as shader_source:
             GL.glShaderSource(shader, shader_source)
             GL.glCompileShader(shader)
         return shader
 
     def create_vertex_shader(self):
         vertex_shader = GL.glCreateShader(GL.GL_VERTEX_SHADER)
-        with open('vertex_shader.gls') as shader_source:
+        with open('python/vertex_shader.gls') as shader_source:
             GL.glShaderSource(vertex_shader, shader_source)
             GL.glCompileShader(vertex_shader)
         return vertex_shader
@@ -107,6 +107,17 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glUniform4f(self.color, math.cos(time.time() % math.pi), math.sin(time.time() % math.pi), math.tan(time.time() % math.pi), 1.0)
         GL.glDrawElements(GL.GL_TRIANGLES, 6, GL.GL_UNSIGNED_INT, c_void_p(0))
         GL.glBindVertexArray(0)
+
+
+class Shader(object):
+
+    def __init__(self, context):
+        try:
+            super(Shader, self).__init__(context)
+        except TypeError:
+            super(Shader, self).__init__()
+
+        self.__context = context
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)

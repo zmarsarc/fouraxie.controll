@@ -13,10 +13,10 @@ class GLDemo(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         super(GLDemo, self).__init__(parent)
         self.vertices = (
-            0.5, 0.5, 0.0,
-            0.5, -0.5, 0.0,
-            -0.5, -0.5, 0.0,
-            -0.5, 0.5, 0.0
+            0.5, 0.5, 0.0, 1.0, 0.0, 0.0,
+            0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
+            -0.5, -0.5, 0.0, 0.0, 0.0, 1.0,
+            -0.5, 0.5, 0.0, 0.0, 0.0, 0.0
         )
         self.indeics = (
             0, 1, 3,
@@ -62,8 +62,10 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glBindVertexArray(vertex_arrays)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vertex_buffer)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element_buffer)
-        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 3 * GL.sizeof(GL.GLfloat), c_void_p(0))
+        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 6 * GL.sizeof(GL.GLfloat), c_void_p(0))
+        GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, GL.GL_FALSE, 6 * GL.sizeof(GL.GLfloat), c_void_p(3 * GL.sizeof(GL.GLfloat)))
         GL.glEnableVertexAttribArray(0)
+        GL.glEnableVertexAttribArray(1)
         GL.glBindVertexArray(0)
         return vertex_arrays
 

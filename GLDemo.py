@@ -3,7 +3,7 @@ import sys
 from PySide import QtCore, QtGui, QtOpenGL
 from OpenGL import GL
 from array import *
-from ctypes import c_void_p
+from ctypes import c_void_p, c_float, sizeof
 import math
 import time
 
@@ -62,7 +62,7 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glBindVertexArray(vertex_arrays)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vertex_buffer)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element_buffer)
-        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 0, c_void_p(0))
+        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 3 * sizeof(c_float), c_void_p(0))
         GL.glEnableVertexAttribArray(0)
         GL.glBindVertexArray(0)
         return vertex_arrays

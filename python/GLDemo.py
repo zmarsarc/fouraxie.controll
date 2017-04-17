@@ -52,11 +52,11 @@ class GLDemo(QtOpenGL.QGLWidget):
 
     def create_element_buffer(self):
         buffer = Buffer(self.context())
-        buffer.create()
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffer.bufferID())
+        buffer.create(QtOpenGL.QGLBuffer.IndexBuffer)
+        buffer.bind()
         GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, array('I', self.indeics).tostring(), GL.GL_STATIC_DRAW)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
-        return buffer.bufferID()
+        buffer.unbind()
+        return buffer.buffer_id()
 
     def create_and_int_array_attrib(self, vertex_buffer, element_buffer):
         vertex_arrays = GL.glGenVertexArrays(1)
@@ -72,11 +72,11 @@ class GLDemo(QtOpenGL.QGLWidget):
 
     def create_vertex_buffer(self):
         buffer = Buffer(self.context())
-        buffer.create()
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, buffer.bufferID())
+        buffer.create(QtOpenGL.QGLBuffer.VertexBuffer)
+        buffer.bind()
         GL.glBufferData(GL.GL_ARRAY_BUFFER, array('f', self.vertices).tostring(), GL.GL_STATIC_DRAW)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        return buffer.bufferID()
+        buffer.unbind()
+        return buffer.buffer_id()
 
     def create_shader_program(self, fragment_shader, vertex_shader):
         program = GL.glCreateProgram()
@@ -125,16 +125,34 @@ class Buffer(object):
         self.__type = QtOpenGL.QGLBuffer.VertexBuffer
         self.__isCreated = False
 
-    def create(self):
-        if not self.__context.isValid():
-            raise RuntimeError("Context not valid")
+    def create(self, buffer_type):
+        self.assert_context()
         try:
             self.__bufferID = GL.glGenBuffers(1)
+            self.__type = buffer_type
             self.__isCreated = True
         except Exception:
             raise RuntimeError("Unknown error")
 
-    def bufferID(self):
+    def bind(self):
+        self.assert_context()
+        GL.glBindBuffer(self.__select_buffer_target(), self.__bufferID)
+
+    def unbind(self):
+        self.assert_context()
+        GL.glBindBuffer(self.__select_buffer_target(), 0)
+
+    def __select_buffer_target(self):
+        if self.__type == QtOpenGL.QGLBuffer.VertexBuffer:
+            return GL.GL_ARRAY_BUFFER
+        if self.__type == QtOpenGL.QGLBuffer.IndexBuffer:
+            return GL.GL_ELEMENT_ARRAY_BUFFER
+
+    def assert_context(self):
+        if not self.__context.isValid():
+            raise RuntimeError("Context not valid")
+
+    def buffer_id(self):
         return self.__bufferID
 
 if __name__ == '__main__':

@@ -4,6 +4,8 @@ from PySide import QtCore, QtGui, QtOpenGL
 from OpenGL import GL
 from array import *
 from ctypes import c_void_p
+import math
+import time
 
 
 class GLDemo(QtOpenGL.QGLWidget):
@@ -22,12 +24,19 @@ class GLDemo(QtOpenGL.QGLWidget):
         )
         self.program = None
         self.vertex_arrays = None
+        self.color = None
         self.trolltechGreen = QtGui.QColor.fromCmykF(0.40, 0.0, 1.0, 0.0)
         self.trolltechPurple = QtGui.QColor.fromCmykF(0.39, 0.39, 0.0, 0.0)
 
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.setInterval(10)
+        self.timer.start()
+
     def initializeGL(self):
         self.setup_render_pipeline()
-        GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
+        # GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
+        self.color = GL.glGetUniformLocation(self.program, 'inputColor')
         self.qglClearColor(self.trolltechPurple.darker())
 
     def setup_render_pipeline(self):
@@ -93,6 +102,7 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glUseProgram(self.program)
         GL.glBindVertexArray(self.vertex_arrays)
+        GL.glUniform4f(self.color, math.cos(time.time() % math.pi), math.sin(time.time() % math.pi), math.tan(time.time() % math.pi), 1.0)
         GL.glDrawElements(GL.GL_TRIANGLES, 6, GL.GL_UNSIGNED_INT, c_void_p(0))
         GL.glBindVertexArray(0)
 

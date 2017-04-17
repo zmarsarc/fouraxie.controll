@@ -31,7 +31,7 @@ class GLDemo(QtOpenGL.QGLWidget):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
         self.timer.setInterval(10)
-        self.timer.start()
+        # self.timer.start()
 
     def initializeGL(self):
         self.setup_render_pipeline()
@@ -40,7 +40,7 @@ class GLDemo(QtOpenGL.QGLWidget):
         self.qglClearColor(self.trolltechPurple.darker())
 
     def setup_render_pipeline(self):
-        vertex_buffer = self.create_and_init_buffer()
+        vertex_buffer = self.create_vertex_buffer()
         element_buffer = self.create_element_buffer()
         self.vertex_arrays = self.create_and_int_array_attrib(vertex_buffer, element_buffer)
         vertex_shader = self.create_vertex_shader()
@@ -69,7 +69,7 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glBindVertexArray(0)
         return vertex_arrays
 
-    def create_and_init_buffer(self):
+    def create_vertex_buffer(self):
         vertex_buffer = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vertex_buffer)
         GL.glBufferData(GL.GL_ARRAY_BUFFER, array('f', self.vertices).tostring(), GL.GL_STATIC_DRAW)

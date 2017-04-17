@@ -51,7 +51,9 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glDeleteShader(fragment_shader)
 
     def create_element_buffer(self):
-        ebo = GL.glGenBuffers(1)
+        buffer = Buffer(self.context())
+        buffer.create()
+        ebo = buffer.bufferID()
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo)
         GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, array('I', self.indeics).tostring(), GL.GL_STATIC_DRAW)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
@@ -70,7 +72,9 @@ class GLDemo(QtOpenGL.QGLWidget):
         return vertex_arrays
 
     def create_vertex_buffer(self):
-        vertex_buffer = GL.glGenBuffers(1)
+        buffer = Buffer(self.context())
+        buffer.create()
+        vertex_buffer = buffer.bufferID()
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vertex_buffer)
         GL.glBufferData(GL.GL_ARRAY_BUFFER, array('f', self.vertices).tostring(), GL.GL_STATIC_DRAW)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
@@ -109,15 +113,31 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glBindVertexArray(0)
 
 
-class Shader(object):
+class Buffer(object):
 
     def __init__(self, context):
         try:
-            super(Shader, self).__init__(context)
+            super(Buffer, self).__init__(context)
         except TypeError:
-            super(Shader, self).__init__()
+            super(Buffer, self).__init__()
 
         self.__context = context
+        self.__bufferID = 0
+        self.__usagePattern = QtOpenGL.QGLBuffer.StaticDraw
+        self.__type = QtOpenGL.QGLBuffer.VertexBuffer
+        self.__isCreated = False
+
+    def create(self):
+        if not self.__context.isValid():
+            raise RuntimeError("Context not valid")
+        try:
+            self.__bufferID = GL.glGenBuffers(1)
+            self.__isCreated = True
+        except Exception:
+            raise RuntimeError("Unknown error")
+
+    def bufferID(self):
+        return self.__bufferID
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)

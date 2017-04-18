@@ -25,13 +25,18 @@ class GLDemo(QtOpenGL.QGLWidget):
         self.program = None
         self.vertex_arrays = None
         self.color = None
+        self.pres = 1.0
         self.trolltechGreen = QtGui.QColor.fromCmykF(0.40, 0.0, 1.0, 0.0)
         self.trolltechPurple = QtGui.QColor.fromCmykF(0.39, 0.39, 0.0, 0.0)
 
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.setInterval(10)
+        self.timer.setInterval(1.0 / 60.0)
         self.timer.start()
+
+    def wheelEvent(self, event):
+        self.pres += event.delta() * 0.001
+        event.accept()
 
     def initializeGL(self):
         self.setup_render_pipeline()
@@ -102,6 +107,9 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glBindVertexArray(self.vertex_arrays)
         GL.glUniformMatrix4fv(
             GL.glGetUniformLocation(self.program, 'transform'), 1, GL.GL_FALSE, array('f', mat).tostring())
+        GL.glUniform1f(
+            GL.glGetUniformLocation(self.program, 'w'), self.pres
+        )
         GL.glDrawElements(GL.GL_TRIANGLES, 6, GL.GL_UNSIGNED_INT, c_void_p(0))
         GL.glBindVertexArray(0)
 

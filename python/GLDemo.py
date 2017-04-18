@@ -40,8 +40,10 @@ class GLDemo(QtOpenGL.QGLWidget):
         self.qglClearColor(self.trolltechPurple.darker())
 
     def setup_render_pipeline(self):
-        vertex_buffer = self.create_vertex_buffer()
-        element_buffer = self.create_element_buffer()
+        vertex_buffer = Buffer.generate_buffer(
+            self.context(), QtOpenGL.QGLBuffer.VertexBuffer, array('f', self.vertices).tostring())
+        element_buffer = Buffer.generate_buffer(
+            self.context(), QtOpenGL.QGLBuffer.IndexBuffer, array('I', self.indeics).tostring())
         self.vertex_arrays = self.create_and_int_array_attrib(vertex_buffer, element_buffer)
         vertex_shader = self.create_vertex_shader()
         fragment_shader = self.create_fragment_shader()
@@ -49,12 +51,6 @@ class GLDemo(QtOpenGL.QGLWidget):
 
         GL.glDeleteShader(vertex_shader)
         GL.glDeleteShader(fragment_shader)
-
-    def create_element_buffer(self):
-        buffer = Buffer(self.context())
-        buffer.create(QtOpenGL.QGLBuffer.IndexBuffer)
-        buffer.allocate(array('I', self.indeics).tostring())
-        return buffer
 
     def create_and_int_array_attrib(self, vertex_buffer, element_buffer):
         vertex_arrays = GL.glGenVertexArrays(1)
@@ -67,12 +63,6 @@ class GLDemo(QtOpenGL.QGLWidget):
         GL.glEnableVertexAttribArray(1)
         GL.glBindVertexArray(0)
         return vertex_arrays
-
-    def create_vertex_buffer(self):
-        buffer = Buffer(self.context())
-        buffer.create(QtOpenGL.QGLBuffer.VertexBuffer)
-        buffer.allocate(array('f', self.vertices).tostring())
-        return buffer
 
     def create_shader_program(self, fragment_shader, vertex_shader):
         program = GL.glCreateProgram()
@@ -195,6 +185,14 @@ class Buffer(object):
         else:
             GL.glBufferData(self.__select_buffer_target(), 0, c_void_p(0), self.__select_memory_usage())
         self.unbind()
+
+    @staticmethod
+    def generate_buffer(context, buffer_type, arg):
+        ret_buffer = Buffer(context)
+        ret_buffer.create(buffer_type)
+        ret_buffer.allocate(arg)
+        return ret_buffer
+
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
